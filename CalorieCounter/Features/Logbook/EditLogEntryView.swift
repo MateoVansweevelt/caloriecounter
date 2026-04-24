@@ -25,6 +25,24 @@ struct EditLogEntryView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    if let model {
+                        if model.isSaving {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Button("Save") {
+                                Task {
+                                    if await model.save() {
+                                        onSaved()
+                                        dismiss()
+                                    }
+                                }
+                            }
+                            .fontWeight(.semibold)
+                            .disabled(model.isSaving)
+                        }
+                    }
+                }
             }
         }
         .task {
@@ -42,7 +60,6 @@ struct EditLogEntryView: View {
                     header
                     servingCard(model: model)
                     metaCard(model: model)
-                    saveButton(model: model)
                     deleteButton(model: model)
                 }
                 .padding(20)
@@ -169,44 +186,15 @@ struct EditLogEntryView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: 22))
     }
 
-    private func saveButton(model: EditLogEntryViewModel) -> some View {
-        Button {
-            Task {
-                if await model.save() {
-                    onSaved()
-                    dismiss()
-                }
-            }
-        } label: {
-            if model.isSaving {
-                ProgressView().controlSize(.small).padding(.vertical, 4)
-            } else {
-                Label("Save changes", systemImage: "checkmark.circle.fill")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-            }
-        }
-        .buttonStyle(.glassProminent)
-        .controlSize(.large)
-        .tint(.accentColor)
-        .disabled(model.isSaving)
-        .padding(.top, 4)
-    }
-
     private func deleteButton(model: EditLogEntryViewModel) -> some View {
         Button(role: .destructive) {
             showDeleteConfirm = true
         } label: {
-            Label("Delete entry", systemImage: "trash")
-                .font(.headline)
+            Text("Delete Entry")
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
         }
-        .buttonStyle(.glassProminent)
-        .controlSize(.large)
-        .tint(.red)
         .disabled(model.isSaving)
+        .padding(.top, 8)
         .confirmationDialog(
             "Delete this entry?",
             isPresented: $showDeleteConfirm,
