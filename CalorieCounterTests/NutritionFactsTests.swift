@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import CaloryCounter
+@testable import CalorieCounter
 
 @Suite("NutritionFacts aggregation")
 struct NutritionFactsTests {

@@ -12,13 +12,13 @@
 			containerPortal = A100000000000000000000E0 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A100000000000000000000E1;
-			remoteInfo = CaloryCounter;
+			remoteInfo = CalorieCounter;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A100000000000000000000D1 /* CaloryCounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CaloryCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A100000000000000000000D2 /* CaloryCounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CaloryCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A100000000000000000000D1 /* CalorieCounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalorieCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A100000000000000000000D2 /* CalorieCounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalorieCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -27,13 +27,13 @@
 			membershipExceptions = (
 				Resources/Info.plist,
 			);
-			target = A100000000000000000000E1 /* CaloryCounter */;
+			target = A100000000000000000000E1 /* CalorieCounter */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A100000000000000000000A1 /* CaloryCounter */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CaloryCounter; sourceTree = "<group>"; };
-		A100000000000000000000A2 /* CaloryCounterTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CaloryCounterTests; sourceTree = "<group>"; };
+		A100000000000000000000A1 /* CalorieCounter */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter; sourceTree = "<group>"; };
+		A100000000000000000000A2 /* CalorieCounterTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,8 +57,8 @@
 		A100000000000000000000C0 = {
 			isa = PBXGroup;
 			children = (
-				A100000000000000000000A1 /* CaloryCounter */,
-				A100000000000000000000A2 /* CaloryCounterTests */,
+				A100000000000000000000A1 /* CalorieCounter */,
+				A100000000000000000000A2 /* CalorieCounterTests */,
 				A100000000000000000000C1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,8 +66,8 @@
 		A100000000000000000000C1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A100000000000000000000D1 /* CaloryCounter.app */,
-				A100000000000000000000D2 /* CaloryCounterTests.xctest */,
+				A100000000000000000000D1 /* CalorieCounter.app */,
+				A100000000000000000000D2 /* CalorieCounterTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -75,9 +75,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A100000000000000000000E1 /* CaloryCounter */ = {
+		A100000000000000000000E1 /* CalorieCounter */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A100000000000000000000F1 /* Build configuration list for PBXNativeTarget "CaloryCounter" */;
+			buildConfigurationList = A100000000000000000000F1 /* Build configuration list for PBXNativeTarget "CalorieCounter" */;
 			buildPhases = (
 				A100000000000000000000B3 /* Sources */,
 				A100000000000000000000B1 /* Frameworks */,
@@ -88,18 +88,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A100000000000000000000A1 /* CaloryCounter */,
+				A100000000000000000000A1 /* CalorieCounter */,
 			);
-			name = CaloryCounter;
+			name = CalorieCounter;
 			packageProductDependencies = (
 			);
-			productName = CaloryCounter;
-			productReference = A100000000000000000000D1 /* CaloryCounter.app */;
+			productName = CalorieCounter;
+			productReference = A100000000000000000000D1 /* CalorieCounter.app */;
 			productType = "com.apple.product-type.application";
 		};
-		A100000000000000000000E2 /* CaloryCounterTests */ = {
+		A100000000000000000000E2 /* CalorieCounterTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A100000000000000000000F2 /* Build configuration list for PBXNativeTarget "CaloryCounterTests" */;
+			buildConfigurationList = A100000000000000000000F2 /* Build configuration list for PBXNativeTarget "CalorieCounterTests" */;
 			buildPhases = (
 				A100000000000000000000B5 /* Sources */,
 				A100000000000000000000B2 /* Frameworks */,
@@ -111,13 +111,13 @@
 				A100000000000000000000E3 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				A100000000000000000000A2 /* CaloryCounterTests */,
+				A100000000000000000000A2 /* CalorieCounterTests */,
 			);
-			name = CaloryCounterTests;
+			name = CalorieCounterTests;
 			packageProductDependencies = (
 			);
-			productName = CaloryCounterTests;
-			productReference = A100000000000000000000D2 /* CaloryCounterTests.xctest */;
+			productName = CalorieCounterTests;
+			productReference = A100000000000000000000D2 /* CalorieCounterTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -139,7 +139,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A100000000000000000000F0 /* Build configuration list for PBXProject "CaloryCounter" */;
+			buildConfigurationList = A100000000000000000000F0 /* Build configuration list for PBXProject "CalorieCounter" */;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -153,8 +153,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A100000000000000000000E1 /* CaloryCounter */,
-				A100000000000000000000E2 /* CaloryCounterTests */,
+				A100000000000000000000E1 /* CalorieCounter */,
+				A100000000000000000000E2 /* CalorieCounterTests */,
 			);
 		};
 /* End PBXProject section */
@@ -196,7 +196,7 @@
 /* Begin PBXTargetDependency section */
 		A100000000000000000000E3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A100000000000000000000E1 /* CaloryCounter */;
+			target = A100000000000000000000E1 /* CalorieCounter */;
 			targetProxy = A100000000000000000000E4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -338,8 +338,8 @@
 				DEVELOPMENT_TEAM = 2B38HKXN3V;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = CaloryCounter/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CaloryCounter;
+				INFOPLIST_FILE = CalorieCounter/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CalorieCounter;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -352,7 +352,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CaloryCounter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -370,8 +370,8 @@
 				DEVELOPMENT_TEAM = 2B38HKXN3V;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = CaloryCounter/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CaloryCounter;
+				INFOPLIST_FILE = CalorieCounter/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CalorieCounter;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -384,7 +384,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CaloryCounter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -400,11 +400,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CaloryCounterTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CaloryCounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CaloryCounter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalorieCounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalorieCounter";
 			};
 			name = Debug;
 		};
@@ -417,18 +417,18 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CaloryCounterTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CaloryCounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CaloryCounter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CalorieCounter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CalorieCounter";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A100000000000000000000F0 /* Build configuration list for PBXProject "CaloryCounter" */ = {
+		A100000000000000000000F0 /* Build configuration list for PBXProject "CalorieCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A10000000000000000000101 /* Debug */,
@@ -437,7 +437,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A100000000000000000000F1 /* Build configuration list for PBXNativeTarget "CaloryCounter" */ = {
+		A100000000000000000000F1 /* Build configuration list for PBXNativeTarget "CalorieCounter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A10000000000000000000103 /* Debug */,
@@ -446,7 +446,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A100000000000000000000F2 /* Build configuration list for PBXNativeTarget "CaloryCounterTests" */ = {
+		A100000000000000000000F2 /* Build configuration list for PBXNativeTarget "CalorieCounterTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A10000000000000000000105 /* Debug */,

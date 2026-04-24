@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import CaloryCounter
+@testable import CalorieCounter
 
 @Suite("Open Food Facts mapping")
 struct OFFMappingTests {

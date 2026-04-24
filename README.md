@@ -1,4 +1,4 @@
-# CaloryCounter
+# CalorieCounter
 
 iOS 26 POC for barcode-based nutrition tracking, built in SwiftUI with the Liquid Glass design language. Apple Health sync is planned but currently disabled (requires a paid Apple Developer team); the protocol seams for it still live in `Domain/`.
 
@@ -8,9 +8,9 @@ iOS 26 POC for barcode-based nutrition tracking, built in SwiftUI with the Liqui
 - A free Apple ID is enough to side-load onto your own device
 
 ## Opening the project
-`open CaloryCounter.xcodeproj` — the project is checked in as a plain `.xcodeproj` (no XcodeGen/Tuist).
+`open CalorieCounter.xcodeproj` — the project is checked in as a plain `.xcodeproj` (no XcodeGen/Tuist).
 
-If Xcode asks for a team, pick yours under **Signing & Capabilities** on the `CaloryCounter` target. The camera usage description is already configured in `Info.plist`. No entitlements file is shipped; re-add one when wiring HealthKit back in.
+If Xcode asks for a team, pick yours under **Signing & Capabilities** on the `CalorieCounter` target. The camera usage description is already configured in `Info.plist`. No entitlements file is shipped; re-add one when wiring HealthKit back in.
 
 ## Running
 - **Simulator:** everything runs except live barcode scanning. The Scan tab includes a debug text field to type a barcode and exercise the full lookup → log → dashboard path.
@@ -33,7 +33,7 @@ The UI uses iOS 26 **Liquid Glass** throughout — `.glassEffect()`, `GlassEffec
 `⌘U` in Xcode, or:
 
 ```bash
-xcodebuild -project CaloryCounter.xcodeproj -scheme CaloryCounter \
+xcodebuild -project CalorieCounter.xcodeproj -scheme CalorieCounter \
   -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test
 ```
 

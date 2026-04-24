@@ -21,7 +21,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>CaloryCounter uses the camera to scan product barcodes and look up nutrition information.</string>
+	<string>CalorieCounter uses the camera to scan product barcodes and look up nutrition information.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

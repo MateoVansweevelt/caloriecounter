@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 import Testing
-@testable import CaloryCounter
+@testable import CalorieCounter
 
 @Suite("SwiftDataLogbookRepository")
 @MainActor

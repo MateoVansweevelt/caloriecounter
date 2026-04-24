@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct CaloryCounterApp: App {
+struct CalorieCounterApp: App {
     @State private var dependencies: AppDependencies?
     @State private var startupError: String?
 

@@ -36,7 +36,7 @@ public enum CalorieWidgetKind {
 
 public enum CalorieSnapshotStore {
     /// Shared App Group identifier. Must be enabled on the app and widget targets.
-    public static let appGroupID = "group.com.calorycounter.shared"
+    public static let appGroupID = "group.com.caloriecounter.shared"
 
     private static let key = "today.calorieSnapshot"
 

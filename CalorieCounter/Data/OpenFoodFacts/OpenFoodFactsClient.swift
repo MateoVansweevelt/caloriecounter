@@ -9,7 +9,7 @@ public actor OpenFoodFactsClient: NutritionProvider {
     public init(
         session: URLSession = .shared,
         baseURL: URL = URL(string: "https://world.openfoodfacts.org")!,
-        userAgent: String = "CaloryCounter/0.1 (iOS; POC)"
+        userAgent: String = "CalorieCounter/0.1 (iOS; POC)"
     ) {
         self.session = session
         self.baseURL = baseURL
