@@ -13,8 +13,8 @@ struct RootView: View {
                 LogbookView()
             }
 
-            Tab("Scan", systemImage: "barcode.viewfinder", value: AppTab.scan, role: .search) {
-                BarcodeScannerView()
+            Tab("Add Food", systemImage: "plus.circle", value: AppTab.scan, role: .search) {
+                AddFoodView()
             }
 
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {

@@ -51,9 +51,47 @@ public actor OpenFoodFactsClient: NutritionProvider {
     }
 
     public func search(query: String, limit: Int) async throws -> [FoodItem] {
-        // Intentionally minimal for the POC — barcode is the primary path.
-        // The v2 search endpoint can be slotted in here later without touching callers.
-        _ = (query, limit)
-        return []
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        // Use search.openfoodfacts.org (Meilisearch-backed) for much better relevance
+        // than the basic v2 search on world.openfoodfacts.org.
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "search.openfoodfacts.org"
+        components.path = "/search"
+        components.queryItems = [
+            URLQueryItem(name: "q", value: trimmed),
+            URLQueryItem(name: "page_size", value: "\(limit)"),
+            URLQueryItem(name: "fields", value: "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"),
+        ]
+        guard let url = components.url else {
+            throw NutritionLookupError.network(underlying: "Invalid search URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 15
+
+        let (data, _): (Data, URLResponse)
+        do {
+            (data, _) = try await session.data(for: request)
+        } catch is CancellationError {
+            throw NutritionLookupError.cancelled
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            throw NutritionLookupError.cancelled
+        } catch {
+            throw NutritionLookupError.network(underlying: error.localizedDescription)
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode(OFFSearchServiceResponse.self, from: data)
+            return decoded.hits.compactMap { OFFMapping.foodItem(from: $0) }
+        } catch let e as NutritionLookupError {
+            throw e
+        } catch {
+            throw NutritionLookupError.decoding(underlying: error.localizedDescription)
+        }
     }
 }

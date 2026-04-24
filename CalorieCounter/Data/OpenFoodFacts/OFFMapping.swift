@@ -1,10 +1,18 @@
 import Foundation
 
 enum OFFMapping {
-    /// Map an OFF product into a domain `FoodItem`. Returns `nil` when essential data is missing
-    /// (name or energy) — those products are effectively unusable for a nutrition app.
+    /// Map an OFF barcode response into a domain `FoodItem`.
     static func foodItem(from response: OFFResponse, barcode: String) -> FoodItem? {
         guard response.status == 1, let product = response.product else { return nil }
+        return map(product: product, barcode: barcode)
+    }
+
+    /// Map a search-result product into a domain `FoodItem`, using the product's own `code` as barcode.
+    static func foodItem(from product: OFFProduct) -> FoodItem? {
+        map(product: product, barcode: product.code ?? "")
+    }
+
+    private static func map(product: OFFProduct, barcode: String) -> FoodItem? {
         let name = product.productName?.trimmingCharacters(in: .whitespacesAndNewlines)
             ?? product.genericName?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let name, !name.isEmpty else { return nil }
@@ -22,7 +30,7 @@ enum OFFMapping {
         return FoodItem(
             name: name,
             brand: brand,
-            source: .openFoodFacts(barcode: barcode),
+            source: barcode.isEmpty ? .userCreated : .openFoodFacts(barcode: barcode),
             imageURL: image,
             facts: facts,
             suggestedServings: suggestedServings(from: product, basis: basis)
@@ -79,11 +87,37 @@ enum OFFMapping {
         )
     }
 
+    /// Map a search hit from search.openfoodfacts.org into a domain `FoodItem`.
+    static func foodItem(from hit: OFFSearchHit) -> FoodItem? {
+        let name = hit.productName?.trimmingCharacters(in: .whitespacesAndNewlines)
+            ?? hit.genericName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let name, !name.isEmpty else { return nil }
+
+        let basis: ServingBasis = inferBasis(from: hit.productQuantityUnit)
+        guard let facts = nutritionFacts(from: hit.nutriments, basis: basis) else { return nil }
+
+        let brand = hit.brands?.first?.trimmingCharacters(in: .whitespaces)
+        let image = (hit.imageFrontURL ?? hit.imageURL).flatMap(URL.init(string:))
+        let barcode = hit.code ?? ""
+
+        return FoodItem(
+            name: name,
+            brand: brand,
+            source: barcode.isEmpty ? .userCreated : .openFoodFacts(barcode: barcode),
+            imageURL: image,
+            facts: facts,
+            suggestedServings: suggestedServings(quantity: hit.servingQuantity, label: hit.servingSize, basis: basis)
+        )
+    }
+
     private static func suggestedServings(from product: OFFProduct, basis: ServingBasis) -> [Serving] {
+        suggestedServings(quantity: product.servingQuantity, label: product.servingSize, basis: basis)
+    }
+
+    private static func suggestedServings(quantity: FlexibleDouble?, label: String?, basis: ServingBasis) -> [Serving] {
         var result: [Serving] = []
-        if let qty = product.servingQuantity?.value, qty > 0 {
-            let label = product.servingSize ?? "Serving"
-            result.append(Serving(basis: basis, amount: qty, label: label))
+        if let qty = quantity?.value, qty > 0 {
+            result.append(Serving(basis: basis, amount: qty, label: label ?? "Serving"))
         }
         let unitLabel = basis == .mass ? "100 g" : "100 ml"
         result.append(Serving(basis: basis, amount: 100, label: unitLabel))
