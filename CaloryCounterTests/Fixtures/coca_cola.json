@@ -1,0 +1,23 @@
+{
+  "code": "5449000000996",
+  "status": 1,
+  "product": {
+    "product_name": "Coca-Cola",
+    "brands": "Coca-Cola",
+    "image_url": "https://images.openfoodfacts.org/images/products/coca-cola.jpg",
+    "serving_size": "330 ml",
+    "serving_quantity": 330,
+    "product_quantity_unit": "ml",
+    "nutriments": {
+      "energy-kcal_100g": 42,
+      "energy_100g": 176,
+      "carbohydrates_100g": 10.6,
+      "sugars_100g": 10.6,
+      "proteins_100g": 0,
+      "fat_100g": 0,
+      "salt_100g": 0.01,
+      "sodium_100g": 0.004,
+      "caffeine_100g": 0.0096
+    }
+  }
+}

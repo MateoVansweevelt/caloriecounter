@@ -1,0 +1,53 @@
+## Build
+build/
+DerivedData/
+*.xcuserstate
+
+## Xcode user data
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+
+## Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+## CocoaPods / Carthage (not used, but ignore if added later)
+Pods/
+Carthage/Build/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+## Misc
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Environment / secrets
+.env
+.env.*
+*.pem
+*.p12
+*.mobileprovision
+secrets.plist
+
+## Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.fleet/
+
+## Claude Code (local only)
+.claude/settings.local.json
