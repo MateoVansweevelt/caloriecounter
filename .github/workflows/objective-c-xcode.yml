@@ -16,7 +16,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
+        run: |
+          xcode26=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$xcode26" ]; then
+            echo "No Xcode 26 found, available versions:"; ls /Applications/Xcode*.app -d; exit 1
+          fi
+          echo "Using $xcode26"
+          sudo xcode-select -s "$xcode26"
 
       - name: Build
         run: |

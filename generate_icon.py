@@ -3,6 +3,7 @@
 
 import math
 import os
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
 SIZE = 1024
@@ -207,9 +208,12 @@ def generate_icon(path, size):
 
 
 def main():
-    base = "/Users/mateovansweevelt/projects/caloriecounter/.claude/worktrees/jolly-buck-2efae0/CalorieCounter/Resources"
-    appiconset = os.path.join(base, "Assets.xcassets", "AppIcon.appiconset")
-    os.makedirs(appiconset, exist_ok=True)
+    appiconset = (
+        Path(__file__).resolve().parent
+        / "CalorieCounter" / "Resources"
+        / "Assets.xcassets" / "AppIcon.appiconset"
+    )
+    appiconset.mkdir(parents=True, exist_ok=True)
 
     icons = [
         ("Icon-1024.png", 1024),
@@ -228,9 +232,8 @@ def main():
 
     print("Generating CalorieCounter app icons...")
     for filename, size in icons:
-        generate_icon(os.path.join(appiconset, filename), size)
+        generate_icon(str(appiconset / filename), size)
 
-    # Write Contents.json
     contents = """{
   "images" : [
     { "filename" : "Icon-1024.png", "idiom" : "universal", "platform" : "ios", "size" : "1024x1024" },
@@ -251,8 +254,7 @@ def main():
   "info" : { "author" : "xcode", "version" : 1 }
 }
 """
-    with open(os.path.join(appiconset, "Contents.json"), "w") as f:
-        f.write(contents)
+    (appiconset / "Contents.json").write_text(contents)
     print("  ✓ Contents.json")
     print("\nDone! Icons saved to CalorieCounter/Resources/Assets.xcassets/AppIcon.appiconset/")
 
