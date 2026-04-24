@@ -54,15 +54,17 @@ public actor OpenFoodFactsClient: NutritionProvider {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
 
-        var components = URLComponents(url: baseURL.appendingPathComponent("api/v2/search"), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
-            URLQueryItem(name: "search_terms", value: trimmed),
-            URLQueryItem(name: "page_size", value: "\(limit)"),
-            URLQueryItem(name: "fields", value: "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"),
-            URLQueryItem(name: "json", value: "1"),
-        ]
+        // URLComponents percent-encodes commas in query values, but the OFF search endpoint
+        // requires literal commas in the `fields` parameter. Build the URL string manually
+        // and only percent-encode the user-supplied search terms.
+        let escapedTerms = trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed
+        let fields = "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"
+        let urlString = "\(baseURL.absoluteString)/api/v2/search?search_terms=\(escapedTerms)&page_size=\(limit)&fields=\(fields)"
+        guard let url = URL(string: urlString) else {
+            throw NutritionLookupError.network(underlying: "Invalid search URL")
+        }
 
-        var request = URLRequest(url: components.url!)
+        var request = URLRequest(url: url)
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 15
