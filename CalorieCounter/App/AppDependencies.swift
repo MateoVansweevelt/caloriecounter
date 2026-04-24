@@ -9,25 +9,35 @@ public final class AppDependencies {
     public let modelContainer: ModelContainer
     public let nutritionProvider: any NutritionProvider
     public let logbook: any LogbookRepository
+    public let health: any HealthRepository
 
     public init(
         modelContainer: ModelContainer,
         nutritionProvider: any NutritionProvider,
-        logbook: any LogbookRepository
+        logbook: any LogbookRepository,
+        health: any HealthRepository
     ) {
         self.modelContainer = modelContainer
         self.nutritionProvider = nutritionProvider
         self.logbook = logbook
+        self.health = health
     }
 
     public static func live() throws -> AppDependencies {
         let container = try AppModelContainer.make()
-        let logbook = SwiftDataLogbookRepository(container: container)
-        let nutrition = OpenFoodFactsClient()
+
+        // To enable HealthKit sync: replace NullHealthRepository() with HealthKitRepository()
+        // and add the HealthKit capability entitlement to the project target.
+        let health: any HealthRepository = NullHealthRepository()
+
+        let baseLogbook = SwiftDataLogbookRepository(container: container)
+        let logbook = HealthSyncingLogbookRepository(inner: baseLogbook, health: health)
+
         return AppDependencies(
             modelContainer: container,
-            nutritionProvider: nutrition,
-            logbook: logbook
+            nutritionProvider: OpenFoodFactsClient(),
+            logbook: logbook,
+            health: health
         )
     }
 }
