@@ -13,8 +13,7 @@ enum OFFMapping {
     }
 
     private static func map(product: OFFProduct, barcode: String) -> FoodItem? {
-        let name = product.productName?.trimmingCharacters(in: .whitespacesAndNewlines)
-            ?? product.genericName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = firstNonEmpty(product.productName, product.genericName)
         guard let name, !name.isEmpty else { return nil }
 
         let basis: ServingBasis = inferBasis(from: product.productQuantityUnit)
@@ -89,8 +88,7 @@ enum OFFMapping {
 
     /// Map a search hit from search.openfoodfacts.org into a domain `FoodItem`.
     static func foodItem(from hit: OFFSearchHit) -> FoodItem? {
-        let name = hit.productName?.trimmingCharacters(in: .whitespacesAndNewlines)
-            ?? hit.genericName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = firstNonEmpty(hit.productName, hit.genericName)
         guard let name, !name.isEmpty else { return nil }
 
         let basis: ServingBasis = inferBasis(from: hit.productQuantityUnit)
@@ -122,6 +120,12 @@ enum OFFMapping {
         let unitLabel = basis == .mass ? "100 g" : "100 ml"
         result.append(Serving(basis: basis, amount: 100, label: unitLabel))
         return result
+    }
+
+    private static func firstNonEmpty(_ values: String?...) -> String? {
+        values
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
     }
 }
 

@@ -35,6 +35,25 @@ struct OFFMappingTests {
         let wrapped = try JSONDecoder().decode(Wrapper.self, from: json)
         #expect(wrapped.v.value == 12.5)
     }
+
+    @Test("empty product name falls back to generic name")
+    func emptyProductNameFallsBackToGenericName() throws {
+        let json = """
+        {
+          "status": 1,
+          "product": {
+            "product_name": "   ",
+            "generic_name": "Sparkling water",
+            "nutriments": { "energy-kcal_100g": 0 }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder().decode(OFFResponse.self, from: json)
+        let food = try #require(OFFMapping.foodItem(from: response, barcode: "123"))
+
+        #expect(food.name == "Sparkling water")
+    }
 }
 
 private final class BundleMarker {}
