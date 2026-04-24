@@ -1,10 +1,18 @@
 import Foundation
 
 enum OFFMapping {
-    /// Map an OFF product into a domain `FoodItem`. Returns `nil` when essential data is missing
-    /// (name or energy) — those products are effectively unusable for a nutrition app.
+    /// Map an OFF barcode response into a domain `FoodItem`.
     static func foodItem(from response: OFFResponse, barcode: String) -> FoodItem? {
         guard response.status == 1, let product = response.product else { return nil }
+        return map(product: product, barcode: barcode)
+    }
+
+    /// Map a search-result product into a domain `FoodItem`, using the product's own `code` as barcode.
+    static func foodItem(from product: OFFProduct) -> FoodItem? {
+        map(product: product, barcode: product.code ?? "")
+    }
+
+    private static func map(product: OFFProduct, barcode: String) -> FoodItem? {
         let name = product.productName?.trimmingCharacters(in: .whitespacesAndNewlines)
             ?? product.genericName?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let name, !name.isEmpty else { return nil }
@@ -22,7 +30,7 @@ enum OFFMapping {
         return FoodItem(
             name: name,
             brand: brand,
-            source: .openFoodFacts(barcode: barcode),
+            source: barcode.isEmpty ? .userCreated : .openFoodFacts(barcode: barcode),
             imageURL: image,
             facts: facts,
             suggestedServings: suggestedServings(from: product, basis: basis)

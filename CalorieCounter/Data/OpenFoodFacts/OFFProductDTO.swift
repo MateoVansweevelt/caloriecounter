@@ -12,6 +12,7 @@ struct OFFResponse: Decodable, Sendable {
 }
 
 struct OFFProduct: Decodable, Sendable {
+    let code: String?
     let productName: String?
     let genericName: String?
     let brands: String?
@@ -23,6 +24,7 @@ struct OFFProduct: Decodable, Sendable {
     let nutriments: OFFNutriments?
 
     enum CodingKeys: String, CodingKey {
+        case code
         case productName = "product_name"
         case genericName = "generic_name"
         case brands
@@ -33,6 +35,11 @@ struct OFFProduct: Decodable, Sendable {
         case productQuantityUnit = "product_quantity_unit"
         case nutriments
     }
+}
+
+struct OFFSearchResponse: Decodable, Sendable {
+    let count: Int?
+    let products: [OFFProduct]
 }
 
 /// Nutriment values in OFF are per-100g/ml and in grams (mass) or as-given for energy.

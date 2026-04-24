@@ -2,9 +2,12 @@ import SwiftUI
 
 struct BarcodeScannerView: View {
     @Environment(\.dependencies) private var dependencies
+    @Environment(\.dismiss) private var dismiss
     @State private var model: ScanViewModel?
-    @State private var manualBarcode: String = ""
     @State private var presentedFood: FoodItem?
+    @State private var manualBarcode: String = ""
+    @State private var showingManualEntry = false
+    @FocusState private var manualFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -15,8 +18,13 @@ struct BarcodeScannerView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle("Scan")
+            .navigationTitle("Scan Barcode")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
         .task {
             if model == nil, let deps = dependencies {
@@ -36,6 +44,8 @@ struct BarcodeScannerView: View {
         }
     }
 
+    // MARK: - Scanner body
+
     @ViewBuilder
     private func scannerBody(model: ScanViewModel) -> some View {
         if ScannerAvailability.isAvailable {
@@ -46,22 +56,80 @@ struct BarcodeScannerView: View {
                 )
                 .ignoresSafeArea()
 
-                overlay(for: model)
+                cameraOverlay(model: model)
             }
         } else {
-            unavailableSimulatorFallback(model: model)
+            simulatorFallback(model: model)
         }
     }
 
+    // MARK: - Camera overlay
+
     @ViewBuilder
-    private func overlay(for model: ScanViewModel) -> some View {
+    private func cameraOverlay(model: ScanViewModel) -> some View {
         VStack {
             Spacer()
-            statusChip(for: model)
-                .padding(.bottom, 24)
+            VStack(spacing: 12) {
+                if showingManualEntry {
+                    manualEntryPanel(model: model)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+                HStack(spacing: 12) {
+                    statusChip(for: model)
+                    if case .idle = model.state, !showingManualEntry {
+                        Button {
+                            withAnimation(.spring(duration: 0.3)) { showingManualEntry = true }
+                            manualFocused = true
+                        } label: {
+                            Image(systemName: "keyboard")
+                                .padding(12)
+                        }
+                        .glassEffect(.regular, in: .circle)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
         }
-        .padding(.horizontal, 20)
+        .animation(.spring(duration: 0.3), value: showingManualEntry)
+        .animation(.spring(duration: 0.3), value: model.state == .idle)
     }
+
+    // MARK: - Manual entry panel
+
+    private func manualEntryPanel(model: ScanViewModel) -> some View {
+        HStack(spacing: 10) {
+            TextField("Barcode number", text: $manualBarcode)
+                .keyboardType(.numberPad)
+                .textFieldStyle(.plain)
+                .focused($manualFocused)
+            if !manualBarcode.isEmpty {
+                Button("Look up") {
+                    let trimmed = manualBarcode.trimmingCharacters(in: .whitespaces)
+                    guard !trimmed.isEmpty else { return }
+                    model.handle(barcode: trimmed)
+                    withAnimation { showingManualEntry = false }
+                    manualBarcode = ""
+                }
+                .buttonStyle(.glassProminent)
+            }
+            Button {
+                withAnimation(.spring(duration: 0.3)) { showingManualEntry = false }
+                manualBarcode = ""
+                manualFocused = false
+            } label: {
+                Image(systemName: "xmark")
+                    .padding(10)
+            }
+            .glassEffect(.regular, in: .circle)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .glassEffect(.regular, in: .capsule)
+    }
+
+    // MARK: - Status chip
 
     @ViewBuilder
     private func statusChip(for model: ScanViewModel) -> some View {
@@ -99,34 +167,42 @@ struct BarcodeScannerView: View {
         }
     }
 
-    private func unavailableSimulatorFallback(model: ScanViewModel) -> some View {
-        VStack(spacing: 20) {
-            Image(systemName: "barcode.viewfinder")
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
-            Text("Live scanner needs a device")
-                .font(.headline)
-            Text("In the simulator, type a barcode to exercise the lookup flow.")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+    // MARK: - Simulator fallback
 
-            HStack {
-                TextField("e.g. 5449000000996", text: $manualBarcode)
-                    .textFieldStyle(.roundedBorder)
-                    .keyboardType(.numberPad)
-                Button("Look up") {
-                    let trimmed = manualBarcode.trimmingCharacters(in: .whitespaces)
-                    guard !trimmed.isEmpty else { return }
-                    model.handle(barcode: trimmed)
+    private func simulatorFallback(model: ScanViewModel) -> some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                VStack(spacing: 12) {
+                    Image(systemName: "barcode.viewfinder")
+                        .font(.system(size: 56))
+                        .foregroundStyle(.tint)
+                    Text("Camera Not Available")
+                        .font(.headline)
+                    Text("Enter a barcode number to look up a product.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.glassProminent)
-                .disabled(manualBarcode.isEmpty)
-            }
 
-            statusChip(for: model)
+                HStack(spacing: 10) {
+                    TextField("e.g. 5449000000996", text: $manualBarcode)
+                        .textFieldStyle(.roundedBorder)
+                        .keyboardType(.numberPad)
+                    Button("Look up") {
+                        let trimmed = manualBarcode.trimmingCharacters(in: .whitespaces)
+                        guard !trimmed.isEmpty else { return }
+                        model.handle(barcode: trimmed)
+                        manualBarcode = ""
+                    }
+                    .buttonStyle(.glassProminent)
+                    .disabled(manualBarcode.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+
+                statusChip(for: model)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(24)
         }
-        .padding(24)
         .glassEffect(.regular, in: .rect(cornerRadius: 28))
         .padding(20)
     }

@@ -51,9 +51,36 @@ public actor OpenFoodFactsClient: NutritionProvider {
     }
 
     public func search(query: String, limit: Int) async throws -> [FoodItem] {
-        // Intentionally minimal for the POC — barcode is the primary path.
-        // The v2 search endpoint can be slotted in here later without touching callers.
-        _ = (query, limit)
-        return []
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/v2/search"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "search_terms", value: trimmed),
+            URLQueryItem(name: "page_size", value: "\(limit)"),
+            URLQueryItem(name: "fields", value: "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"),
+            URLQueryItem(name: "json", value: "1"),
+        ]
+
+        var request = URLRequest(url: components.url!)
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 15
+
+        let (data, _): (Data, URLResponse)
+        do {
+            (data, _) = try await session.data(for: request)
+        } catch is CancellationError {
+            throw NutritionLookupError.cancelled
+        } catch {
+            throw NutritionLookupError.network(underlying: error.localizedDescription)
+        }
+
+        do {
+            let decoded = try JSONDecoder().decode(OFFSearchResponse.self, from: data)
+            return decoded.products.compactMap { OFFMapping.foodItem(from: $0) }
+        } catch {
+            throw NutritionLookupError.decoding(underlying: error.localizedDescription)
+        }
     }
 }
