@@ -33,4 +33,13 @@ final class LogbookViewModel {
             self.errorMessage = error.localizedDescription
         }
     }
+
+    func update(_ entry: LogEntry) async {
+        do {
+            try await logbook.update(entry)
+            await load()
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
 }
