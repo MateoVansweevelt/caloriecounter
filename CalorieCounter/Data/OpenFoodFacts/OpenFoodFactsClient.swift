@@ -54,12 +54,11 @@ public actor OpenFoodFactsClient: NutritionProvider {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
 
-        // URLComponents percent-encodes commas in query values, but the OFF search endpoint
-        // requires literal commas in the `fields` parameter. Build the URL string manually
-        // and only percent-encode the user-supplied search terms.
+        // Use search.openfoodfacts.org (Meilisearch-backed) for much better relevance
+        // than the basic v2 search on world.openfoodfacts.org.
         let escapedTerms = trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed
         let fields = "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"
-        let urlString = "\(baseURL.absoluteString)/api/v2/search?search_terms=\(escapedTerms)&page_size=\(limit)&fields=\(fields)"
+        let urlString = "https://search.openfoodfacts.org/search?q=\(escapedTerms)&page_size=\(limit)&fields=\(fields)"
         guard let url = URL(string: urlString) else {
             throw NutritionLookupError.network(underlying: "Invalid search URL")
         }
@@ -81,8 +80,8 @@ public actor OpenFoodFactsClient: NutritionProvider {
         }
 
         do {
-            let decoded = try JSONDecoder().decode(OFFSearchResponse.self, from: data)
-            return decoded.products.compactMap { OFFMapping.foodItem(from: $0) }
+            let decoded = try JSONDecoder().decode(OFFSearchServiceResponse.self, from: data)
+            return decoded.hits.compactMap { OFFMapping.foodItem(from: $0) }
         } catch let e as NutritionLookupError {
             throw e
         } catch {

@@ -37,9 +37,41 @@ struct OFFProduct: Decodable, Sendable {
     }
 }
 
+// Used by world.openfoodfacts.org/api/v2/search (kept for reference, not currently used)
 struct OFFSearchResponse: Decodable, Sendable {
     let count: Int?
     let products: [OFFProduct]
+}
+
+// Used by search.openfoodfacts.org — better relevance, different schema
+struct OFFSearchServiceResponse: Decodable, Sendable {
+    let hits: [OFFSearchHit]
+}
+
+struct OFFSearchHit: Decodable, Sendable {
+    let code: String?
+    let productName: String?
+    let genericName: String?
+    let brands: [String]?
+    let imageURL: String?
+    let imageFrontURL: String?
+    let servingSize: String?
+    let servingQuantity: FlexibleDouble?
+    let productQuantityUnit: String?
+    let nutriments: OFFNutriments?
+
+    enum CodingKeys: String, CodingKey {
+        case code
+        case productName = "product_name"
+        case genericName = "generic_name"
+        case brands
+        case imageURL = "image_url"
+        case imageFrontURL = "image_front_url"
+        case servingSize = "serving_size"
+        case servingQuantity = "serving_quantity"
+        case productQuantityUnit = "product_quantity_unit"
+        case nutriments
+    }
 }
 
 /// Nutriment values in OFF are per-100g/ml and in grams (mass) or as-given for energy.
