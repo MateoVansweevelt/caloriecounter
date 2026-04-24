@@ -14,6 +14,15 @@ final class FoodSearchViewModel {
         self.nutrition = nutrition
     }
 
+    private static func describe(_ error: any Error) -> String {
+        switch error as? NutritionLookupError {
+        case .network(let msg): return "Network error: \(msg)"
+        case .decoding(let msg): return "Couldn't read response: \(msg)"
+        case .notFound: return "Not found"
+        case .cancelled, nil: return error.localizedDescription
+        }
+    }
+
     func search(query: String) {
         searchTask?.cancel()
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -34,10 +43,10 @@ final class FoodSearchViewModel {
                 results = items
                 isLoading = false
             } catch NutritionLookupError.cancelled {
-                // user cleared the search
+                // user cleared the search or typed the next character
             } catch {
                 guard !Task.isCancelled else { return }
-                errorMessage = error.localizedDescription
+                errorMessage = Self.describe(error)
                 isLoading = false
             }
         }

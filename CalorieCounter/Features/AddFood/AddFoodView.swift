@@ -4,6 +4,7 @@ struct AddFoodView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var searchText = ""
     @State private var searchModel: FoodSearchViewModel?
+    @State private var recentFoods: [FoodItem] = []
     @State private var presentedFood: FoodItem?
     @State private var showingScanner = false
 
@@ -27,9 +28,11 @@ struct AddFoodView: View {
             searchModel?.search(query: query)
         }
         .task {
-            if searchModel == nil, let deps = dependencies {
+            guard let deps = dependencies else { return }
+            if searchModel == nil {
                 searchModel = FoodSearchViewModel(nutrition: deps.nutritionProvider)
             }
+            await loadRecentFoods(from: deps.logbook)
         }
         .sheet(isPresented: $showingScanner) {
             BarcodeScannerView()
@@ -39,42 +42,113 @@ struct AddFoodView: View {
         }
     }
 
+    // MARK: - Recent foods
+
+    private func loadRecentFoods(from logbook: any LogbookRepository) async {
+        let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: .now) ?? .now
+        let entries = (try? await logbook.entries(from: thirtyDaysAgo, to: .now)) ?? []
+        // Deduplicate by food name, preserving most-recent-first order
+        var seen = Set<String>()
+        recentFoods = entries
+            .sorted { $0.consumedAt > $1.consumedAt }
+            .compactMap { entry -> FoodItem? in
+                let key = entry.food.name.lowercased()
+                guard seen.insert(key).inserted else { return nil }
+                return entry.food
+            }
+            .prefix(8)
+            .map { $0 }
+    }
+
     // MARK: - Empty state
 
+    @ViewBuilder
     private var emptyState: some View {
-        List {
-            Section {
-                Button { showingScanner = true } label: {
-                    HStack(spacing: 14) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(.tint.opacity(0.12))
-                                .frame(width: 40, height: 40)
-                            Image(systemName: "barcode.viewfinder")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundStyle(.tint)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Scan Barcode")
-                                .font(.body)
-                                .foregroundStyle(.primary)
-                            Text("Point at any product barcode")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .padding(.vertical, 4)
+        if recentFoods.isEmpty {
+            genuinelyEmptyState
+        } else {
+            List {
+                scanBarcodeSection
+                recentFoodsSection
+            }
+            .listStyle(.insetGrouped)
+        }
+    }
+
+    private var scanBarcodeSection: some View {
+        Section {
+            Button { showingScanner = true } label: {
+                scanBarcodeRow
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var scanBarcodeRow: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.tint.opacity(0.12))
+                    .frame(width: 40, height: 40)
+                Image(systemName: "barcode.viewfinder")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.tint)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Scan Barcode")
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                Text("Point at any product barcode")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var recentFoodsSection: some View {
+        Section("Recent") {
+            ForEach(recentFoods) { food in
+                Button {
+                    presentedFood = food
+                } label: {
+                    FoodSearchRow(food: food)
                 }
                 .buttonStyle(.plain)
-            } header: {
-                Text("Quick Actions")
             }
         }
-        .listStyle(.insetGrouped)
+    }
+
+    // MARK: - Truly empty state (no log history at all)
+
+    private var genuinelyEmptyState: some View {
+        VStack(spacing: 0) {
+            List {
+                scanBarcodeSection
+            }
+            .listStyle(.insetGrouped)
+            .frame(maxHeight: 100)
+
+            Spacer()
+
+            VStack(spacing: 16) {
+                Text("🍽️")
+                    .font(.system(size: 64))
+                Text("It's a food desert in here")
+                    .font(.title3.weight(.semibold))
+                Text("Your history is emptier than a gym on January 2nd.\nSearch above or scan a barcode — your macros won't track themselves.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 32)
+
+            Spacer()
+        }
     }
 
     // MARK: - Search results
@@ -82,8 +156,7 @@ struct AddFoodView: View {
     @ViewBuilder
     private func searchResultsView(model: FoodSearchViewModel) -> some View {
         if model.isLoading {
-            List { }
-                .overlay { ProgressView() }
+            List { }.overlay { ProgressView() }
         } else if let error = model.errorMessage {
             ContentUnavailableView(
                 "Search Failed",
@@ -106,9 +179,9 @@ struct AddFoodView: View {
     }
 }
 
-// MARK: - Row
+// MARK: - Shared row
 
-private struct FoodSearchRow: View {
+struct FoodSearchRow: View {
     let food: FoodItem
 
     var body: some View {

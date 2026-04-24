@@ -72,6 +72,8 @@ public actor OpenFoodFactsClient: NutritionProvider {
             (data, _) = try await session.data(for: request)
         } catch is CancellationError {
             throw NutritionLookupError.cancelled
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            throw NutritionLookupError.cancelled
         } catch {
             throw NutritionLookupError.network(underlying: error.localizedDescription)
         }
@@ -79,6 +81,8 @@ public actor OpenFoodFactsClient: NutritionProvider {
         do {
             let decoded = try JSONDecoder().decode(OFFSearchResponse.self, from: data)
             return decoded.products.compactMap { OFFMapping.foodItem(from: $0) }
+        } catch let e as NutritionLookupError {
+            throw e
         } catch {
             throw NutritionLookupError.decoding(underlying: error.localizedDescription)
         }
