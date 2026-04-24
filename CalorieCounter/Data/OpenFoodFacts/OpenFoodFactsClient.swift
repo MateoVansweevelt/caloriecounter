@@ -56,10 +56,16 @@ public actor OpenFoodFactsClient: NutritionProvider {
 
         // Use search.openfoodfacts.org (Meilisearch-backed) for much better relevance
         // than the basic v2 search on world.openfoodfacts.org.
-        let escapedTerms = trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed
-        let fields = "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"
-        let urlString = "https://search.openfoodfacts.org/search?q=\(escapedTerms)&page_size=\(limit)&fields=\(fields)"
-        guard let url = URL(string: urlString) else {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "search.openfoodfacts.org"
+        components.path = "/search"
+        components.queryItems = [
+            URLQueryItem(name: "q", value: trimmed),
+            URLQueryItem(name: "page_size", value: "\(limit)"),
+            URLQueryItem(name: "fields", value: "code,product_name,generic_name,brands,image_front_url,image_url,nutriments,serving_size,serving_quantity,product_quantity_unit"),
+        ]
+        guard let url = components.url else {
             throw NutritionLookupError.network(underlying: "Invalid search URL")
         }
 

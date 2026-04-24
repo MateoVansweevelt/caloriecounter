@@ -38,7 +38,12 @@ struct AddFoodView: View {
             BarcodeScannerView()
         }
         .sheet(item: $presentedFood) { food in
-            FoodDetailView(food: food) { presentedFood = nil }
+            FoodDetailView(food: food) {
+                presentedFood = nil
+                if let deps = dependencies {
+                    Task { await loadRecentFoods(from: deps.logbook) }
+                }
+            }
         }
     }
 
