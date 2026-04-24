@@ -15,34 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo "$scheme_list" | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo "$default" > default
-          echo "Using default scheme: $default"
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
       - name: Build
-        env:
-          scheme: default
         run: |
           set -o pipefail
-
-          if [ "$scheme" = "default" ]; then
-            scheme=$(cat default)
-          fi
-
-          if ls -1 *.xcworkspace >/dev/null 2>&1; then
-            filetype_parameter="workspace"
-            file_to_build=$(ls -1 *.xcworkspace | head -n 1)
-          else
-            filetype_parameter="project"
-            file_to_build=$(ls -1 *.xcodeproj | head -n 1)
-          fi
-
           xcodebuild clean build analyze \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
+            -scheme CalorieCounter \
+            -project CalorieCounter.xcodeproj \
             -destination "generic/platform=iOS Simulator" \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
