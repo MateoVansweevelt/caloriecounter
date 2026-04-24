@@ -3,6 +3,7 @@ import SwiftUI
 struct LogbookView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var model: LogbookViewModel?
+    @State private var editingEntry: LogEntry?
 
     var body: some View {
         NavigationStack {
@@ -35,7 +36,10 @@ struct LogbookView: View {
                                 )
                             } else {
                                 ForEach(model.entries) { entry in
-                                    entryRow(entry: entry)
+                                    Button { editingEntry = entry } label: {
+                                        entryRow(entry: entry)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                                 .onDelete { indexSet in
                                     Task {
@@ -55,6 +59,13 @@ struct LogbookView: View {
             }
             .navigationTitle("Log")
             .background(Color(.systemGroupedBackground))
+        }
+        .sheet(item: $editingEntry) { entry in
+            EditLogEntryView(
+                entry: entry,
+                onSaved: { Task { await model?.load() } },
+                onDeleted: { Task { await model?.load() } }
+            )
         }
         .task {
             if model == nil, let deps = dependencies {
