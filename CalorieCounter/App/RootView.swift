@@ -17,6 +17,10 @@ struct RootView: View {
                 AddFoodView()
             }
 
+            Tab("Meals", systemImage: "fork.knife", value: AppTab.meals) {
+                MealsListView()
+            }
+
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
             }
@@ -26,7 +30,7 @@ struct RootView: View {
     }
 }
 
-enum AppTab: Hashable { case today, log, scan, settings }
+enum AppTab: Hashable { case today, log, scan, meals, settings }
 
 #Preview {
     RootView()
