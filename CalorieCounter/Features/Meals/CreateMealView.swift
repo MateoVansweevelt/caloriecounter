@@ -45,6 +45,18 @@ struct CreateMealView: View {
                 }
             }
         }
+        .alert(
+            "Unit Mismatch",
+            isPresented: Binding(
+                get: { model?.basisConflictAlert != nil },
+                set: { if !$0 { model?.basisConflictAlert = nil } }
+            ),
+            presenting: model?.basisConflictAlert
+        ) { _ in
+            Button("OK", role: .cancel) { model?.basisConflictAlert = nil }
+        } message: { message in
+            Text(message)
+        }
     }
 
     // MARK: - Content

@@ -7,6 +7,7 @@ final class CreateMealViewModel {
     var ingredients: [MealIngredient]
     var numberOfPortions: Int
     var isSaving = false
+    var basisConflictAlert: String?
 
     private let existing: CustomMeal?
     private let mealRepo: any MealRepository
@@ -35,6 +36,13 @@ final class CreateMealViewModel {
     }
 
     func addIngredient(_ ingredient: MealIngredient) {
+        if let existing = ingredients.first,
+           existing.food.facts.basis != ingredient.food.facts.basis {
+            let existingUnit = existing.food.facts.basis == .mass ? "grams (g)" : "millilitres (ml)"
+            let newUnit = ingredient.food.facts.basis == .mass ? "grams (g)" : "millilitres (ml)"
+            basisConflictAlert = "\"\(ingredient.food.name)\" is measured in \(newUnit), but this meal already uses \(existingUnit). Mixing units isn't supported — convert all ingredients to the same unit or create separate meals."
+            return
+        }
         ingredients.append(ingredient)
     }
 
