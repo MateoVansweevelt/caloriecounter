@@ -2,16 +2,6 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-/// Hardcoded defaults for the POC. Surface these in Settings later.
-public struct NutritionTargets: Sendable, Hashable {
-    public var calories: Double = 2200
-    public var carbsGrams: Double = 250
-    public var proteinGrams: Double = 140
-    public var fatGrams: Double = 70
-
-    public static let `default` = NutritionTargets()
-}
-
 @Observable
 @MainActor
 final class TodayViewModel {
@@ -28,6 +18,9 @@ final class TodayViewModel {
     }
 
     func load(day: Date = .now) async {
+        // Refresh targets from UserDefaults on every load so changes made in
+        // Settings are picked up whenever the user navigates back to Today.
+        targets = NutritionTargets.fromUserDefaults()
         do {
             let entries = try await logbook.entries(on: day)
             self.entries = entries
