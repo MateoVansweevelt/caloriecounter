@@ -25,9 +25,12 @@ struct CalorieHeroCard: View {
                         Text("\(Int(consumedKcal.rounded()))")
                             .font(.system(size: 40, weight: .semibold, design: .rounded))
                             .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                         Text("kcal")
                             .font(.title3.weight(.medium))
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                 }
                 Spacer()
