@@ -10,17 +10,20 @@ public final class AppDependencies {
     public let nutritionProvider: any NutritionProvider
     public let logbook: any LogbookRepository
     public let health: any HealthRepository
+    public let meals: any MealRepository
 
     public init(
         modelContainer: ModelContainer,
         nutritionProvider: any NutritionProvider,
         logbook: any LogbookRepository,
-        health: any HealthRepository
+        health: any HealthRepository,
+        meals: any MealRepository
     ) {
         self.modelContainer = modelContainer
         self.nutritionProvider = nutritionProvider
         self.logbook = logbook
         self.health = health
+        self.meals = meals
     }
 
     public static func live() throws -> AppDependencies {
@@ -32,12 +35,14 @@ public final class AppDependencies {
 
         let baseLogbook = SwiftDataLogbookRepository(container: container)
         let logbook = HealthSyncingLogbookRepository(inner: baseLogbook, health: health)
+        let meals = SwiftDataMealRepository(container: container)
 
         return AppDependencies(
             modelContainer: container,
             nutritionProvider: OpenFoodFactsClient(),
             logbook: logbook,
-            health: health
+            health: health,
+            meals: meals
         )
     }
 }
