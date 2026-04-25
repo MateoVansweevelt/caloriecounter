@@ -22,11 +22,14 @@ struct MacroRing: View {
                     .stroke(tint, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeOut(duration: 0.5), value: progress)
-                VStack(spacing: 2) {
+                VStack(spacing: 1) {
                     Text("\(Int(current.rounded()))")
-                        .font(.title3.bold())
+                        .font(.system(.headline, design: .rounded).bold())
                         .monospacedDigit()
-                    Text(unit).font(.caption2).foregroundStyle(.secondary)
+                    Text("/ \(Int(target))\(unit)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
             }
             .frame(width: 84, height: 84)

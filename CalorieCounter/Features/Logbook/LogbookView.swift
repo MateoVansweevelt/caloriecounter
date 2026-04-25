@@ -9,43 +9,61 @@ struct LogbookView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 if let model {
-                    DatePicker(
-                        "Day",
-                        selection: Binding(
-                            get: { model.selectedDay },
-                            set: { model.selectedDay = $0 }
-                        ),
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.compact)
-                    .padding(.horizontal, 20).padding(.top, 12)
-                    .onChange(of: model.selectedDay) { _, _ in
-                        Task { await model.load() }
-                    }
-
-                    totalsCard(model: model)
-                        .padding(.horizontal, 20).padding(.top, 12)
-
                     List {
-                        Section("Entries") {
-                            if model.entries.isEmpty {
+                        Section {
+                            DatePicker(
+                                "Day",
+                                selection: Binding(
+                                    get: { model.selectedDay },
+                                    set: { model.selectedDay = $0 }
+                                ),
+                                displayedComponents: .date
+                            )
+                            .datePickerStyle(.compact)
+                            .onChange(of: model.selectedDay) { _, _ in
+                                Task { await model.load() }
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listSectionSeparator(.hidden)
+
+                        Section {
+                            totalsRow(model: model)
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listSectionSeparator(.hidden)
+
+                        if model.entries.isEmpty {
+                            Section {
                                 ContentUnavailableView(
                                     "No entries",
                                     systemImage: "tray",
-                                    description: Text("Pick another day or scan something new.")
+                                    description: Text("Pick another day or add something new.")
                                 )
-                            } else {
-                                ForEach(model.entries) { entry in
-                                    Button { editingEntry = entry } label: {
-                                        entryRow(entry: entry)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                                .onDelete { indexSet in
-                                    Task {
-                                        for index in indexSet {
-                                            await model.delete(model.entries[index])
+                                .listRowBackground(Color.clear)
+                            }
+                            .listSectionSeparator(.hidden)
+                        } else {
+                            ForEach(MealSlot.allCases, id: \.self) { slot in
+                                let slotEntries = model.entries.filter { $0.mealSlot == slot }
+                                if !slotEntries.isEmpty {
+                                    Section {
+                                        ForEach(slotEntries) { entry in
+                                            Button { editingEntry = entry } label: {
+                                                entryRow(entry: entry)
+                                            }
+                                            .buttonStyle(.plain)
                                         }
+                                        .onDelete { indexSet in
+                                            Task {
+                                                for index in indexSet {
+                                                    await model.delete(slotEntries[index])
+                                                }
+                                            }
+                                        }
+                                    } header: {
+                                        Label(slot.displayName, systemImage: slot.symbolName)
                                     }
                                 }
                             }
@@ -58,7 +76,7 @@ struct LogbookView: View {
                 }
             }
             .navigationTitle("Log")
-            .background(Color(.systemGroupedBackground))
+            .background(backgroundGradient)
         }
         .sheet(item: $editingEntry) { entry in
             EditLogEntryView(
@@ -75,8 +93,8 @@ struct LogbookView: View {
         }
     }
 
-    private func totalsCard(model: LogbookViewModel) -> some View {
-        HStack(spacing: 16) {
+    private func totalsRow(model: LogbookViewModel) -> some View {
+        HStack(spacing: 12) {
             pill(title: "Calories", value: UnitsFormatting.calories(model.totals.energy))
             pill(title: "Carbs", value: UnitsFormatting.grams(model.totals.macros.carbohydrates))
             pill(title: "Protein", value: UnitsFormatting.grams(model.totals.macros.protein))
@@ -92,6 +110,15 @@ struct LogbookView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .glassEffect(.regular, in: .rect(cornerRadius: 16))
+    }
+
+    private var backgroundGradient: some View {
+        LinearGradient(
+            colors: [Color.accentColor.opacity(0.25), Color(.systemGroupedBackground)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
     }
 
     private func entryRow(entry: LogEntry) -> some View {

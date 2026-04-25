@@ -117,7 +117,7 @@ struct MealLogView: View {
     private func nutritionCard(model: MealLogViewModel) -> some View {
         let n = model.nutritionForPortions
         return VStack(alignment: .leading, spacing: 10) {
-            Text("Will log").font(.headline)
+            Text("Nutrition").font(.headline)
             HStack {
                 VStack(alignment: .leading) {
                     Text(UnitsFormatting.calories(n.energy))
@@ -169,7 +169,10 @@ struct MealLogView: View {
                 get: { model.note },
                 set: { model.note = $0 }
             ), axis: .vertical)
-            .textFieldStyle(.roundedBorder)
+            .textFieldStyle(.plain)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(.thinMaterial, in: .rect(cornerRadius: 10))
         }
         .padding(20)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))

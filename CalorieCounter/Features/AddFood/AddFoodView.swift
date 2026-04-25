@@ -131,29 +131,27 @@ struct AddFoodView: View {
     // MARK: - Truly empty state (no log history at all)
 
     private var genuinelyEmptyState: some View {
-        VStack(spacing: 0) {
-            List {
-                scanBarcodeSection
+        List {
+            scanBarcodeSection
+            Section {
+                VStack(spacing: 16) {
+                    Text("🍽️")
+                        .font(.system(size: 64))
+                    Text("It's a food desert in here")
+                        .font(.title3.weight(.semibold))
+                    Text("Search above or scan a barcode — your macros won't track themselves.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
             }
-            .listStyle(.insetGrouped)
-            .frame(maxHeight: 100)
-
-            Spacer()
-
-            VStack(spacing: 16) {
-                Text("🍽️")
-                    .font(.system(size: 64))
-                Text("It's a food desert in here")
-                    .font(.title3.weight(.semibold))
-                Text("Your history is emptier than a gym on January 2nd.\nSearch above or scan a barcode — your macros won't track themselves.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 32)
-
-            Spacer()
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listSectionSeparator(.hidden)
         }
+        .listStyle(.insetGrouped)
     }
 
     // MARK: - Search results

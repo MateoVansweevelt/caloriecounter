@@ -70,15 +70,22 @@ struct EditLogEntryView: View {
 
     private var header: some View {
         HStack(spacing: 16) {
-            if let url = entry.food.imageURL {
-                AsyncImage(url: url) { image in
-                    image.resizable().aspectRatio(contentMode: .fit)
-                } placeholder: {
-                    Image(systemName: "shippingbox").foregroundStyle(.secondary)
+            AsyncImage(url: entry.food.imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    ZStack {
+                        Color.secondary.opacity(0.1)
+                        Image(systemName: "fork.knife")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .frame(width: 72, height: 72)
-                .clipShape(.rect(cornerRadius: 14))
             }
+            .frame(width: 72, height: 72)
+            .clipShape(.rect(cornerRadius: 14))
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(entry.food.name).font(.title3.bold())
                 if let brand = entry.food.brand { Text(brand).foregroundStyle(.secondary) }
