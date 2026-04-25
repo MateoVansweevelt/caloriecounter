@@ -54,15 +54,22 @@ struct FoodDetailView: View {
 
     private func header(model: FoodDetailViewModel) -> some View {
         HStack(spacing: 16) {
-            if let url = food.imageURL {
-                AsyncImage(url: url) { image in
-                    image.resizable().aspectRatio(contentMode: .fit)
-                } placeholder: {
-                    Image(systemName: "shippingbox").foregroundStyle(.secondary)
+            AsyncImage(url: food.imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    ZStack {
+                        Color.secondary.opacity(0.1)
+                        Image(systemName: "fork.knife")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .frame(width: 72, height: 72)
-                .clipShape(.rect(cornerRadius: 14))
             }
+            .frame(width: 72, height: 72)
+            .clipShape(.rect(cornerRadius: 14))
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(food.name).font(.title3.bold())
                 if let brand = food.brand { Text(brand).foregroundStyle(.secondary) }
@@ -145,7 +152,7 @@ struct FoodDetailView: View {
     private func nutritionCard(model: FoodDetailViewModel) -> some View {
         let c = model.consumed
         return VStack(alignment: .leading, spacing: 10) {
-            Text("Will log").font(.headline)
+            Text("Nutrition").font(.headline)
             HStack {
                 VStack(alignment: .leading) {
                     Text(UnitsFormatting.calories(c.energy))
@@ -192,7 +199,10 @@ struct FoodDetailView: View {
                 get: { model.note },
                 set: { model.note = $0 }
             ), axis: .vertical)
-            .textFieldStyle(.roundedBorder)
+            .textFieldStyle(.plain)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(.thinMaterial, in: .rect(cornerRadius: 10))
         }
         .padding(20)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))

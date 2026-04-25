@@ -73,13 +73,19 @@ struct TodayView: View {
                 ContentUnavailableView(
                     "Nothing logged yet",
                     systemImage: "fork.knife",
-                    description: Text("Tap the Scan tab to add your first item.")
+                    description: Text("Tap Add Food to log your first item.")
                 )
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
             } else {
-                ForEach(MealSlot.allCases, id: \.self) { slot in
+                let visibleSlots = MealSlot.allCases.filter {
+                    model.groupedBySlot[$0]?.isEmpty == false
+                }
+                ForEach(visibleSlots, id: \.self) { slot in
                     if let entries = model.groupedBySlot[slot], !entries.isEmpty {
+                        if slot != visibleSlots.first {
+                            Divider()
+                        }
                         mealSection(slot: slot, entries: entries)
                     }
                 }
@@ -90,10 +96,17 @@ struct TodayView: View {
     }
 
     private func mealSection(slot: MealSlot, entries: [LogEntry]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(slot.displayName, systemImage: slot.symbolName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
+        let slotKcal = entries.reduce(0.0) { $0 + $1.consumed.energy.converted(to: .kilocalories).value }
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label(slot.displayName, systemImage: slot.symbolName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(Int(slotKcal.rounded())) kcal")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.tertiary)
+            }
             ForEach(entries) { entry in
                 HStack {
                     VStack(alignment: .leading) {

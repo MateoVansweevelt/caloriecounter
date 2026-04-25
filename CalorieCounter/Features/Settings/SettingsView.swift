@@ -174,13 +174,14 @@ struct SettingsView: View {
     private var comingSoonSection: some View {
         Section("Coming soon") {
             Label("Apple Health sync", systemImage: "heart.fill")
-                .foregroundStyle(.pink)
+                .foregroundStyle(.pink.opacity(0.6))
             Label("Custom foods & recipes", systemImage: "fork.knife.circle")
             Label("Apple Watch app", systemImage: "applewatch")
             Label("Widgets & Live Activities", systemImage: "rectangle.stack.badge.play")
             Label("Siri / App Intents", systemImage: "mic.fill")
             Label("iCloud sync", systemImage: "cloud.fill")
         }
+        .foregroundStyle(.secondary)
     }
 
     private var aboutSection: some View {

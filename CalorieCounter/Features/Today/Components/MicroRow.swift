@@ -5,10 +5,10 @@ struct MicroRow: View {
     let value: MicroValue
 
     var body: some View {
-        HStack {
-            Image(systemName: "circle.hexagongrid.fill")
-                .foregroundStyle(.tint)
-                .font(.caption)
+        HStack(spacing: 10) {
+            Circle()
+                .fill(.tint.opacity(0.75))
+                .frame(width: 7, height: 7)
             Text(key.displayName)
             Spacer()
             Text(UnitsFormatting.grams(value.mass))
