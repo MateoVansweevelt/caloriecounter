@@ -59,6 +59,7 @@ struct TodayView: View {
                         tint: .yellow
                     )
                 }
+                .frame(maxWidth: .infinity)
 
                 mealsCard(model: model)
                 microsCard(model: model)
