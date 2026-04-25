@@ -61,19 +61,26 @@ public struct CustomMeal: Identifiable, Hashable, Sendable, Codable {
         )
     }
 
-    public var totalGrams: Double {
+    /// `.volume` only when every ingredient is volume-based; `.mass` otherwise (including mixed).
+    public var basis: ServingBasis {
+        !ingredients.isEmpty && ingredients.allSatisfy { $0.food.facts.basis == .volume }
+            ? .volume : .mass
+    }
+
+    public var totalAmount: Double {
         ingredients.reduce(0) { $0 + $1.amount }
     }
 
-    /// Converts this meal to a `FoodItem` with per-100g nutrition so it can be logged
+    /// Converts this meal to a `FoodItem` with per-100 (g or ml) nutrition so it can be logged
     /// using the standard FoodDetailView. The suggested serving is one portion.
     public func asFoodItem() -> FoodItem {
+        let mealBasis = basis
         let perPortion = nutritionPerPortion
-        let gramsPerPortion = totalGrams / Double(max(numberOfPortions, 1))
-        let per100factor = gramsPerPortion > 0 ? 100.0 / gramsPerPortion : 1.0
+        let amountPerPortion = totalAmount / Double(max(numberOfPortions, 1))
+        let per100factor = amountPerPortion > 0 ? 100.0 / amountPerPortion : 1.0
 
         let facts = NutritionFacts(
-            basis: .mass,
+            basis: mealBasis,
             energy: perPortion.energy * per100factor,
             macros: perPortion.macros.scaled(by: per100factor),
             micros: perPortion.micros.scaled(by: per100factor)
@@ -85,7 +92,7 @@ public struct CustomMeal: Identifiable, Hashable, Sendable, Codable {
             source: .userCreated,
             facts: facts,
             suggestedServings: [
-                Serving(basis: .mass, amount: gramsPerPortion, label: "1 portion")
+                Serving(basis: mealBasis, amount: amountPerPortion, label: "1 portion")
             ]
         )
     }

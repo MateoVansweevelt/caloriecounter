@@ -33,11 +33,11 @@ final class MealLogViewModel {
         defer { isSaving = false }
 
         let foodItem = meal.asFoodItem()
-        let gramsPerPortion = meal.totalGrams / Double(max(meal.numberOfPortions, 1))
-        let totalGrams = gramsPerPortion * Double(portions)
+        let amountPerPortion = meal.totalAmount / Double(max(meal.numberOfPortions, 1))
+        let totalAmount = amountPerPortion * Double(portions)
         let serving = Serving(
-            basis: .mass,
-            amount: totalGrams,
+            basis: meal.basis,
+            amount: totalAmount,
             label: portions == 1 ? "1 portion" : "\(portions) portions"
         )
 

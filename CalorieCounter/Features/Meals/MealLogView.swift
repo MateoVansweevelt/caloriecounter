@@ -107,8 +107,9 @@ struct MealLogView: View {
     }
 
     private func portionWeight(model: MealLogViewModel) -> String {
-        let g = meal.totalGrams / Double(max(meal.numberOfPortions, 1))
-        return "\(Int(g.rounded()))g"
+        let amount = meal.totalAmount / Double(max(meal.numberOfPortions, 1))
+        let unit = meal.basis == .mass ? "g" : "ml"
+        return "\(Int(amount.rounded()))\(unit)"
     }
 
     // MARK: - Nutrition
