@@ -131,27 +131,34 @@ struct AddFoodView: View {
     // MARK: - Truly empty state (no log history at all)
 
     private var genuinelyEmptyState: some View {
-        List {
-            scanBarcodeSection
-            Section {
-                VStack(spacing: 16) {
-                    Text("🍽️")
-                        .font(.system(size: 64))
+        ScrollView {
+            VStack(spacing: 0) {
+                // Scan barcode card — consistent styling with the list card used when recent foods exist
+                Button { showingScanner = true } label: {
+                    scanBarcodeRow
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
+                .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                // Empty state centred in the remaining space
+                VStack(spacing: 12) {
+                    Text("🍽️").font(.system(size: 56))
                     Text("It's a food desert in here")
                         .font(.title3.weight(.semibold))
-                    Text("Search above or scan a barcode — your macros won't track themselves.")
+                    Text("Search above or scan a barcode —\nyour macros won't track themselves.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
+                .padding(.horizontal, 40)
+                .padding(.vertical, 80)
             }
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .listSectionSeparator(.hidden)
         }
-        .listStyle(.insetGrouped)
     }
 
     // MARK: - Search results
