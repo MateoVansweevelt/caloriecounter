@@ -35,6 +35,8 @@ final class EditLogEntryViewModel {
         switch displayUnit {
         case .grams, .millilitres: 5
         case .kilograms, .litres: 0.05
+        case .ounces, .fluidOunces: 0.5
+        case .pounds: 0.1
         }
     }
 
