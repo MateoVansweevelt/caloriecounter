@@ -25,8 +25,17 @@ public struct Serving: Hashable, Sendable, Codable {
     }
 
     public var formattedAmount: String {
-        let unit = basis == .mass ? "g" : "ml"
-        return "\(Int(amount.rounded())) \(unit)"
+        switch basis {
+        case .mass:
+            return UnitsFormatting.grams(Measurement(value: amount, unit: .grams))
+        case .volume:
+            switch UnitSystem.current {
+            case .metric:
+                return "\(Int(amount.rounded())) ml"
+            case .imperial:
+                return String(format: "%.1f fl oz", amount / 29.5735)
+            }
+        }
     }
 
     public var displayLabel: String {
