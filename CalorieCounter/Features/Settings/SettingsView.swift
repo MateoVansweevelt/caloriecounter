@@ -36,6 +36,15 @@ struct SettingsView: View {
                 aboutSection
             }
             .navigationTitle("Settings")
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
             // Heal macros that may have been zeroed by a previous bad state.
             .onAppear(perform: restoreInvalidMacros)
             // Cascade calorie changes into proportional macro adjustments.
