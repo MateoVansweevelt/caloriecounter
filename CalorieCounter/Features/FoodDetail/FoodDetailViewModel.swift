@@ -3,15 +3,21 @@ import Foundation
 enum ServingDisplayUnit: Hashable, Sendable {
     case grams
     case kilograms
+    case ounces
+    case pounds
     case millilitres
     case litres
+    case fluidOunces
 
     var symbol: String {
         switch self {
         case .grams: "g"
         case .kilograms: "kg"
+        case .ounces: "oz"
+        case .pounds: "lb"
         case .millilitres: "ml"
         case .litres: "l"
+        case .fluidOunces: "fl oz"
         }
     }
 
@@ -20,20 +26,27 @@ enum ServingDisplayUnit: Hashable, Sendable {
         switch self {
         case .grams, .millilitres: 1
         case .kilograms, .litres: 1000
+        case .ounces: 28.3495
+        case .pounds: 453.592
+        case .fluidOunces: 29.5735
         }
     }
 
-    static func available(for basis: ServingBasis) -> [ServingDisplayUnit] {
-        switch basis {
-        case .mass: [.grams, .kilograms]
-        case .volume: [.millilitres, .litres]
+    static func available(for basis: ServingBasis, system: UnitSystem = .current) -> [ServingDisplayUnit] {
+        switch (basis, system) {
+        case (.mass, .metric): [.grams, .kilograms]
+        case (.mass, .imperial): [.ounces, .pounds]
+        case (.volume, .metric): [.millilitres, .litres]
+        case (.volume, .imperial): [.fluidOunces, .litres]
         }
     }
 
-    static func `default`(for basis: ServingBasis) -> ServingDisplayUnit {
-        switch basis {
-        case .mass: .grams
-        case .volume: .millilitres
+    static func `default`(for basis: ServingBasis, system: UnitSystem = .current) -> ServingDisplayUnit {
+        switch (basis, system) {
+        case (.mass, .metric): .grams
+        case (.mass, .imperial): .ounces
+        case (.volume, .metric): .millilitres
+        case (.volume, .imperial): .fluidOunces
         }
     }
 }
@@ -78,6 +91,8 @@ final class FoodDetailViewModel {
         switch displayUnit {
         case .grams, .millilitres: 5
         case .kilograms, .litres: 0.05
+        case .ounces, .fluidOunces: 0.5
+        case .pounds: 0.1
         }
     }
 
