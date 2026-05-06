@@ -8,6 +8,7 @@ final class EditLogEntryViewModel {
     var displayUnit: ServingDisplayUnit
     var consumedAt: Date
     var mealSlot: MealSlot
+    var note: String
     var isSaving: Bool = false
     var errorMessage: String?
 
@@ -19,6 +20,7 @@ final class EditLogEntryViewModel {
         self.displayUnit = .default(for: entry.serving.basis)
         self.consumedAt = entry.consumedAt
         self.mealSlot = entry.mealSlot
+        self.note = entry.note ?? ""
         self.logbook = logbook
     }
 
@@ -43,8 +45,20 @@ final class EditLogEntryViewModel {
     func incrementAmount() { displayAmount += displayStep }
     func decrementAmount() { displayAmount = max(0, displayAmount - displayStep) }
 
+    var selectedSuggestedServing: Serving? {
+        entry.food.suggestedServings.first {
+            $0.basis == entry.serving.basis && $0.amount == customAmount
+        }
+    }
+
+    func applySuggestedServing(_ serving: Serving?) {
+        guard let serving else { return }
+        customAmount = serving.amount
+        displayUnit = .default(for: serving.basis)
+    }
+
     var effectiveServing: Serving {
-        Serving(basis: entry.serving.basis, amount: customAmount, label: entry.serving.label)
+        Serving(basis: entry.serving.basis, amount: customAmount, label: selectedSuggestedServing?.label)
     }
 
     var consumed: ConsumedNutrition {
@@ -58,6 +72,7 @@ final class EditLogEntryViewModel {
         updated.serving = effectiveServing
         updated.consumedAt = consumedAt
         updated.mealSlot = mealSlot
+        updated.note = note.isEmpty ? nil : note
         do {
             try await logbook.update(updated)
             return true

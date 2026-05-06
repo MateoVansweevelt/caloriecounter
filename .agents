@@ -1,0 +1,58 @@
+# CalorieCounter — agent instructions
+
+This repo is a **SwiftUI** iOS app (`CalorieCounter.xcodeproj`, scheme `CalorieCounter`). Domain logic lives under `CalorieCounter/Domain/`, data under `CalorieCounter/Data/`, features under `CalorieCounter/Features/`. Prefer matching existing patterns over new abstractions.
+
+## General expectations
+
+- **Scope:** Change only what is needed for the task. No drive-by refactors, unrelated formatting sweeps, or scope creep unless the user explicitly asks for it.
+- **Consistency:** Follow existing naming, folder layout, Swift style, and patterns in nearby code. Reuse abstractions that already exist.
+- **Tests:** When you change behavior that is (or should be) covered by tests, run the relevant test target and fix failures you introduce. Add tests when the project already tests similar logic and your change is non-trivial.
+- **Security and hygiene:** Never commit secrets (API keys, tokens, passwords), private URLs, or personal signing identifiers. Do not disable security features or entitlements “just to make it build” without explicit user direction.
+- **Dependencies:** Do not add new third-party packages or heavy dependencies unless the user clearly wants them; prefer the standard library and what the project already uses.
+- **Ambiguity:** If product behavior, acceptance criteria, or a breaking architectural choice is unclear, ask a short clarifying question instead of guessing.
+- **Handoff:** When you finish meaningful work, state what changed, which parts of the app or domain are affected, and how to verify it (including the simulator steps below).
+
+## Git workflow
+
+### Branches
+
+When creating a **new branch**, sync with the default line of development first: **fetch and pull the latest `main`** (or the repo’s default branch if it is named differently), then branch from that updated tip. Do not branch from a stale local `main`.
+
+### Commit messages
+
+Use a **short type prefix** in the imperative mood, consistent with [Conventional Commits](https://www.conventionalcommits.org/)-style prefixes, for example:
+
+- `feat:` — new user-facing behavior or capability
+- `fix:` — bug fixes
+- `docs:` — documentation only
+- `refactor:` — internal change, same outward behavior
+- `test:` — tests only
+- `chore:` — tooling, config, housekeeping
+- `style:` — formatting only (no logic change)
+
+Example: `feat: add serving size editor to log entry sheet`
+
+### Pull requests
+
+Whenever a **feature** is added (anything that would reasonably ship as a user-visible or behavior-changing increment), **open a pull request** against the default branch. The PR title and description must be **complete and accurate**: summarize what changed, what was added or removed, how to exercise or test it, and any risks or follow-ups. Do not open a bare or placeholder PR body.
+
+## Simulator verification (required after changes)
+
+Whenever you have **added** something — new code, files, UI, behavior, or tests — you must validate the app on **both** of these Simulator destinations before considering the work done:
+
+1. **iPhone 17**
+2. **iPhone 17 Pro Max**
+
+Do this by building (and running tests when relevant) against each destination, for example:
+
+```bash
+xcodebuild -project CalorieCounter.xcodeproj -scheme CalorieCounter \
+  -destination 'platform=iOS Simulator,name=iPhone 17' build
+
+xcodebuild -project CalorieCounter.xcodeproj -scheme CalorieCounter \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' build
+```
+
+If you changed test-covered areas, also run tests on each destination (replace `build` with `test`). If a simulator name is unavailable on the machine, list devices with `xcrun simctl list devices available` and use the closest matching **iPhone 17** / **iPhone 17 Pro Max** runtime, then note the substitution.
+
+Do not skip this dual-simulator check after additive changes.

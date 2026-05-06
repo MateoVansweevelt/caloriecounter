@@ -102,16 +102,12 @@ struct EditLogEntryView: View {
             Text("Serving").font(.headline)
             if !entry.food.suggestedServings.isEmpty {
                 Picker("Suggested", selection: Binding(
-                    get: {
-                        entry.food.suggestedServings.first { $0.amount == model.customAmount } ?? entry.food.suggestedServings[0]
-                    },
-                    set: { serving in
-                        model.customAmount = serving.amount
-                        model.displayUnit = .default(for: serving.basis)
-                    }
+                    get: { model.selectedSuggestedServing },
+                    set: { model.applySuggestedServing($0) }
                 )) {
+                    Text("Custom").tag(Serving?.none)
                     ForEach(entry.food.suggestedServings, id: \.self) { serving in
-                        Text(serving.displayLabel).tag(serving)
+                        Text(serving.displayLabel).tag(Optional(serving))
                     }
                 }
                 .pickerStyle(.segmented)
@@ -188,6 +184,11 @@ struct EditLogEntryView: View {
                     Label(slot.displayName, systemImage: slot.symbolName).tag(slot)
                 }
             }
+            TextField("Note", text: Binding(
+                get: { model.note },
+                set: { model.note = $0 }
+            ), axis: .vertical)
+            .textFieldStyle(.roundedBorder)
         }
         .padding(20)
         .glassEffect(.regular, in: .rect(cornerRadius: 22))

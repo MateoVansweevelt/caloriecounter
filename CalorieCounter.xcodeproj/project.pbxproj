@@ -6,6 +6,10 @@
 	objectVersion = 71;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A100000000000000000000D4 /* CalorieCounterWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* CalorieCounterWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A100000000000000000000E4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -22,10 +26,6 @@
 			remoteInfo = CalorieCounterWidget;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXBuildFile section */
-		A100000000000000000000D4 /* CalorieCounterWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* CalorieCounterWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		A100000000000000000000B8 /* Embed App Extensions */ = {
@@ -59,7 +59,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				CalorieCounterWidget.entitlements,
 			);
 			target = A100000000000000000000E5 /* CalorieCounterWidget */;
 		};
@@ -69,7 +68,7 @@
 		A100000000000000000000A1 /* CalorieCounter */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter; sourceTree = "<group>"; };
 		A100000000000000000000A2 /* CalorieCounterTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterTests; sourceTree = "<group>"; };
 		A100000000000000000000A4 /* CalorieCounterWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterWidget; sourceTree = "<group>"; };
-		A100000000000000000000A6 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter/Shared; sourceTree = "<group>"; };
+		A100000000000000000000A6 /* CalorieCounter/Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter/Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,7 +102,7 @@
 				A100000000000000000000A1 /* CalorieCounter */,
 				A100000000000000000000A2 /* CalorieCounterTests */,
 				A100000000000000000000A4 /* CalorieCounterWidget */,
-				A100000000000000000000A6 /* Shared */,
+				A100000000000000000000A6 /* CalorieCounter/Shared */,
 				A100000000000000000000C1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -182,7 +181,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A100000000000000000000A4 /* CalorieCounterWidget */,
-				A100000000000000000000A6 /* Shared */,
+				A100000000000000000000A6 /* CalorieCounter/Shared */,
 			);
 			name = CalorieCounterWidget;
 			packageProductDependencies = (
