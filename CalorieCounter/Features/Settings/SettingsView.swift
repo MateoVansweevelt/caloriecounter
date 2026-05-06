@@ -1,6 +1,9 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
+    @Environment(\.dependencies) private var dependencies
+    @State private var isForceSyncingWidget = false
 
     // MARK: - Unit system
 
@@ -35,6 +38,7 @@ struct SettingsView: View {
                 mealsSection
                 personalSection
                 dailyGoalsSection
+                widgetSection
                 comingSoonSection
                 aboutSection
             }
@@ -51,7 +55,10 @@ struct SettingsView: View {
             // Heal macros that may have been zeroed by a previous bad state.
             .onAppear(perform: restoreInvalidMacros)
             // Cascade calorie changes into proportional macro adjustments.
-            .onChange(of: calories, adjustMacros)
+            .onChange(of: calories) { oldValue, newValue in
+                adjustMacros(from: oldValue, to: newValue)
+                refreshCalorieWidgetFromLogbook()
+            }
         }
     }
 
@@ -204,6 +211,27 @@ struct SettingsView: View {
         }
     }
 
+    private var widgetSection: some View {
+        Section {
+            Button {
+                Task { await forceSyncCalorieWidget() }
+            } label: {
+                HStack {
+                    Label("Sync home screen widget", systemImage: "arrow.triangle.2.circlepath")
+                    Spacer()
+                    if isForceSyncingWidget {
+                        ProgressView()
+                    }
+                }
+            }
+            .disabled(isForceSyncingWidget || dependencies?.logbook == nil)
+        } header: {
+            Text("Widget")
+        } footer: {
+            Text("Updates the shared calorie snapshot from your log and reloads the widget. Use this if the ring does not match the app.")
+        }
+    }
+
     private var comingSoonSection: some View {
         Section("Coming soon") {
             Label("Apple Health sync", systemImage: "heart.fill")
@@ -346,6 +374,20 @@ struct SettingsView: View {
             get: { UserProfile.ActivityLevel(rawValue: activityLevelRaw) ?? .moderatelyActive },
             set: { activityLevelRaw = $0.rawValue }
         )
+    }
+
+    private func refreshCalorieWidgetFromLogbook() {
+        guard let logbook = dependencies?.logbook else { return }
+        Task { await TodaySnapshotPublisher.refresh(logbook: logbook) }
+    }
+
+    @MainActor
+    private func forceSyncCalorieWidget() async {
+        guard let logbook = dependencies?.logbook else { return }
+        isForceSyncingWidget = true
+        defer { isForceSyncingWidget = false }
+        await TodaySnapshotPublisher.forceSync(logbook: logbook)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private func goalRow(label: String, unit: String, value: Binding<Double>) -> some View {

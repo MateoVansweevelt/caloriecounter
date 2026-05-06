@@ -1,5 +1,4 @@
 import Foundation
-import WidgetKit
 
 /// Wraps any LogbookRepository and mirrors every mutation to a HealthRepository.
 /// Health sync failures are swallowed so they never prevent food from being logged.
@@ -47,12 +46,14 @@ actor HealthSyncingLogbookRepository: LogbookRepository {
         let today = Date.now
         guard let entries = try? await inner.entries(on: today) else { return }
         let totals = DailyTotals.totals(for: entries)
-        let snapshot = CalorieSnapshot(
-            consumedKcal: totals.energy.converted(to: .kilocalories).value,
-            targetKcal: NutritionTargets.default.calories,
-            dayStart: Calendar.current.startOfDay(for: today)
+        let consumed = totals.energy.converted(to: .kilocalories).value
+        let g = totals.macroGrams
+        await CalorieSnapshotStore.publishTodayRing(
+            consumedKcal: consumed,
+            consumedCarbsG: g.carbs,
+            consumedProteinG: g.protein,
+            consumedFatG: g.fat,
+            day: today
         )
-        CalorieSnapshotStore.save(snapshot)
-        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
     }
 }

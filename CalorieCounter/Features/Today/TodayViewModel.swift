@@ -1,6 +1,5 @@
 import Foundation
 import SwiftUI
-import WidgetKit
 
 @Observable
 @MainActor
@@ -35,12 +34,13 @@ final class TodayViewModel {
 
     private func publishSnapshot(day: Date) {
         let consumedKcal = totals.energy.converted(to: .kilocalories).value
-        let snapshot = CalorieSnapshot(
+        let g = totals.macroGrams
+        CalorieSnapshotStore.publishTodayRing(
             consumedKcal: consumedKcal,
-            targetKcal: targets.calories,
-            dayStart: Calendar.current.startOfDay(for: day)
+            consumedCarbsG: g.carbs,
+            consumedProteinG: g.protein,
+            consumedFatG: g.fat,
+            day: day
         )
-        CalorieSnapshotStore.save(snapshot)
-        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
     }
 }

@@ -3,6 +3,7 @@ import UIKit
 
 struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dependencies) private var dependencies
     @State private var selection: AppTab = .today
 
     var body: some View {
@@ -32,11 +33,18 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 AppOpenStreakStore.shared.recordOpenIfNeeded()
+                refreshCalorieWidgetFromLogbook()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             AppOpenStreakStore.shared.recordOpenIfNeeded()
+            refreshCalorieWidgetFromLogbook()
         }
+    }
+
+    private func refreshCalorieWidgetFromLogbook() {
+        guard let logbook = dependencies?.logbook else { return }
+        Task { await TodaySnapshotPublisher.refresh(logbook: logbook) }
     }
 }
 

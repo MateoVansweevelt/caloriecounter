@@ -1,10 +1,16 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct CalorieCounterApp: App {
     @State private var dependencies: AppDependencies?
     @State private var startupError: String?
+
+    init() {
+        UIScrollView.appearance().showsVerticalScrollIndicator = false
+        UIScrollView.appearance().showsHorizontalScrollIndicator = false
+    }
 
     var body: some Scene {
         WindowGroup {
