@@ -108,16 +108,20 @@ struct SettingsView: View {
             }
 
             if let bmr = currentProfile.bmr {
-                LabeledContent("BMR") {
+                LabeledContent {
                     Text("\(Int(bmr.rounded())) kcal")
                         .foregroundStyle(.secondary)
+                } label: {
+                    acronymLabel(title: "BMR", expansion: "Basal metabolic rate", meaning: "Energy your body uses at complete rest, before activity.")
                 }
             }
 
             if let tdee = currentProfile.tdee {
-                LabeledContent("Estimated TDEE") {
+                LabeledContent {
                     Text("\(Int(tdee.rounded())) kcal")
                         .foregroundStyle(.secondary)
+                } label: {
+                    acronymLabel(title: "TDEE", expansion: "Total daily energy expenditure", meaning: "Estimated calories burned in a typical day, including BMR and your activity level.")
                 }
             }
         } header: {
@@ -354,6 +358,18 @@ struct SettingsView: View {
                 Text(unit).foregroundStyle(.secondary)
             }
         }
+    }
+
+    /// Two-line label for metrics commonly written as acronyms (BMR, TDEE, …).
+    private func acronymLabel(title: String, expansion: String, meaning: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+            Text("\(expansion). \(meaning)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(expansion). \(meaning)")
     }
 }
 

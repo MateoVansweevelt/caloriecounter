@@ -53,6 +53,96 @@ struct WeightLossForecastView: View {
         }
     }
 
+    /// Longest visible forecast horizon in weeks (fractional), for axis scaling.
+    private var chartMaxWeek: Double {
+        let maxDay = chartPoints.map(\.day).max() ?? 0
+        return max(Double(maxDay) / 7, 1 / 7)
+    }
+
+    /// Week stride chosen from the data span so tick density stays readable on short and long forecasts.
+    private var chartWeekAxisStride: Double {
+        Self.niceAxisStride(approxMax: chartMaxWeek, targetDivisions: 6)
+    }
+
+    private var chartXWeekDomain: ClosedRange<Double> {
+        0...(chartMaxWeek * 1.06)
+    }
+
+    /// Explicit week tick positions so the x-axis adapts to the forecast length without relying on type-inference quirks of `AxisMarkValues.stride`.
+    private var chartWeekAxisMarkValues: [Double] {
+        let upper = chartXWeekDomain.upperBound
+        let step = chartWeekAxisStride
+        guard step > 0 else { return [0] }
+        var marks: [Double] = []
+        var x = 0.0
+        let epsilon = step * 0.001
+        while x <= upper + epsilon {
+            marks.append(x)
+            x += step
+        }
+        return marks
+    }
+
+    private func weekAxisLabel(_ weeks: Double) -> String {
+        if chartWeekAxisStride >= 1 {
+            return "\(Int((weeks).rounded()))"
+        }
+        return String(format: "%.1f", weeks)
+    }
+
+    /// Min/max projected weight in the user’s display units (kg or lb) across visible series.
+    private var chartDisplayWeightBounds: (min: Double, max: Double) {
+        let values = chartPoints.map { displayWeight(fromKg: $0.weightKg) }
+        guard let mn = values.min(), let mx = values.max() else {
+            return (0, isMetric ? 100 : 220)
+        }
+        if mx - mn < 1e-9 {
+            let bump = isMetric ? 0.5 : 1.0
+            return (mn - bump, mx + bump)
+        }
+        return (mn, mx)
+    }
+
+    /// Vertical domain padded so the curve does not sit on the plot edges; span scales with the data.
+    private var chartYAxisDomain: ClosedRange<Double> {
+        let (mn, mx) = chartDisplayWeightBounds
+        let span = max(mx - mn, isMetric ? 0.25 : 0.5)
+        let pad = span * 0.08
+        return (mn - pad)...(mx + pad)
+    }
+
+    private var chartYAxisStride: Double {
+        let span = chartYAxisDomain.upperBound - chartYAxisDomain.lowerBound
+        return Self.niceAxisStride(approxMax: span, targetDivisions: 5)
+    }
+
+    private var chartYAxisMarkValues: [Double] {
+        let lo = chartYAxisDomain.lowerBound
+        let hi = chartYAxisDomain.upperBound
+        let step = chartYAxisStride
+        guard step > 0 else { return [lo, hi] }
+        var y = floor(lo / step) * step
+        let epsilon = step * 0.001
+        var marks: [Double] = []
+        while y <= hi + epsilon {
+            if y >= lo - epsilon { marks.append(y) }
+            y += step
+        }
+        if marks.count < 2 { return [lo, hi] }
+        return marks
+    }
+
+    private func weightAxisLabel(_ value: Double) -> String {
+        let step = chartYAxisStride
+        if step >= 1 {
+            return String(format: "%.0f", value)
+        }
+        if step >= 0.1 {
+            return String(format: "%.1f", value)
+        }
+        return String(format: "%.2f", value)
+    }
+
     var body: some View {
         List {
             if !canRunForecast {
@@ -161,7 +251,7 @@ struct WeightLossForecastView: View {
             Text("Summary")
         } footer: {
             Text(
-                "Each curve assumes you eat your calorie target every day and that activity stays the same while mass changes. BMR is recomputed daily (Mifflin–St Jeor); TDEE is BMR × activity multiplier."
+                "Each curve assumes you eat your calorie target every day and that activity stays the same while mass changes. Basal metabolic rate (BMR) is recomputed daily with Mifflin–St Jeor. Total daily energy expenditure (TDEE) is BMR × an activity multiplier (PAL)."
             )
             .font(.footnote)
         }
@@ -189,7 +279,7 @@ struct WeightLossForecastView: View {
             } else {
                 Chart(chartPoints) { point in
                     LineMark(
-                        x: .value("Day", point.day),
+                        x: .value("Week", point.week),
                         y: .value("Weight", displayWeight(fromKg: point.weightKg))
                     )
                     .interpolationMethod(.catmullRom)
@@ -197,16 +287,34 @@ struct WeightLossForecastView: View {
                 }
                 .chartForegroundStyleScale(domain: chartDomainNames, range: chartColors)
                 .frame(height: 260)
+                .chartXScale(domain: chartXWeekDomain)
+                .chartYScale(domain: chartYAxisDomain)
                 .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 5))
+                    AxisMarks(values: chartWeekAxisMarkValues) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel {
+                            if let w = value.as(Double.self) {
+                                Text(weekAxisLabel(w))
+                            }
+                        }
+                    }
                 }
                 .chartYAxis {
-                    AxisMarks(position: .leading)
+                    AxisMarks(position: .leading, values: chartYAxisMarkValues) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel {
+                            if let w = value.as(Double.self) {
+                                Text(weightAxisLabel(w))
+                            }
+                        }
+                    }
                 }
-                .chartXAxisLabel("Days")
+                .chartXAxisLabel("Weeks from today")
                 .chartYAxisLabel(isMetric ? "kg" : "lb", position: .leading)
                 .chartLegend(.hidden)
-                .accessibilityLabel("Forecast weight by day for each activity level")
+                .accessibilityLabel("Forecast weight by week for each activity level")
             }
         } header: {
             Text("Projected weight")
@@ -282,7 +390,7 @@ struct WeightLossForecastView: View {
         } header: {
             Text("What each activity level means")
         } footer: {
-            Text("PAL (physical activity level) labels are fuzzy. Pick the tier that best matches a typical week, not your hardest training day.")
+            Text("PAL (physical activity level) is the factor applied to BMR to estimate TDEE. These category labels are fuzzy—pick the tier that best matches a typical week, not your hardest training day.")
                 .font(.footnote)
         }
     }
@@ -314,12 +422,29 @@ struct WeightLossForecastView: View {
         let y = Double(days) / 365.25
         return String(format: "~%.1f years (%d days)", y, days)
     }
+
+    /// Rounds `approxMax / targetDivisions` to a human-readable step (1–2–5 × 10ⁿ).
+    private static func niceAxisStride(approxMax: Double, targetDivisions: Double) -> Double {
+        guard approxMax > 0, targetDivisions > 0 else { return 1 }
+        let rough = approxMax / targetDivisions
+        let exponent = floor(log10(rough))
+        let mantissa = rough / pow(10, exponent)
+        let niceMantissa: Double
+        if mantissa <= 1 { niceMantissa = 1 }
+        else if mantissa <= 2 { niceMantissa = 2 }
+        else if mantissa <= 5 { niceMantissa = 5 }
+        else { niceMantissa = 10 }
+        return max(niceMantissa * pow(10, exponent), approxMax / 24)
+    }
 }
 
 private struct ForecastChartPoint: Identifiable {
     let day: Int
     let weightKg: Double
     let activityLevel: UserProfile.ActivityLevel
+
+    /// Fractional weeks since day 0 (smooth x domain for the chart).
+    var week: Double { Double(day) / 7 }
 
     var id: String { "\(activityLevel.rawValue)-\(day)" }
 
