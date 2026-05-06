@@ -97,11 +97,35 @@ struct AppOpenStreakStoreTests {
         let cal = utcCalendar()
         let d = noon(on: 15, month: 7, year: 2026, calendar: cal)
         let epoch = cal.startOfDay(for: d).timeIntervalSince1970
-        let model = ContributionHeatmapModel.build(now: d, calendar: cal, openDayEpochs: [epoch])
+        let model = ContributionHeatmapModel.buildLast53Weeks(now: d, calendar: cal, openDayEpochs: [epoch])
         let flat = model.cells.flatMap { $0 }
         let match = flat.first { cal.isDate($0.dayStart, inSameDayAs: d) }
         #expect(match != nil)
         #expect(match?.wasOpened == true)
         #expect(match?.isFuture == false)
+    }
+
+    @Test("Home heatmap: fixed week columns, spans prior months, ends on week of today")
+    func homeHeatmapTrailingWeeksFilled() {
+        let cal = utcCalendar()
+        let d = noon(on: 15, month: 7, year: 2026, calendar: cal)
+        let weekCount = 18
+        let model = ContributionHeatmapModel.buildTrailingWeeksThroughToday(
+            now: d,
+            calendar: cal,
+            openDayEpochs: [],
+            weekCount: weekCount
+        )
+        #expect(model.cells.count == weekCount)
+        guard let lastColumn = model.cells.last else {
+            Issue.record("Expected week columns")
+            return
+        }
+        let hasToday = lastColumn.contains { $0.isToday && cal.isDate($0.dayStart, inSameDayAs: d) }
+        #expect(hasToday)
+        let julyStart = cal.date(from: DateComponents(year: 2026, month: 7, day: 1))!
+        let earliest = model.cells.first?.first?.dayStart
+        #expect(earliest != nil)
+        #expect(earliest! < julyStart)
     }
 }

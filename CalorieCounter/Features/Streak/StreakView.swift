@@ -10,21 +10,21 @@ struct StreakView: View {
                     streakTile(title: "Current", value: store.currentStreak, systemImage: "flame.fill")
                     streakTile(title: "Longest", value: store.longestStreak, systemImage: "trophy.fill")
                     streakTile(
-                        title: "Last year",
-                        value: store.heatmapModel().activeDaysInWindow,
+                        title: "Last 53 weeks",
+                        value: store.heatmapModelLast53Weeks().activeDaysInWindow,
                         systemImage: "square.grid.3x3.fill"
                     )
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
             } footer: {
-                Text("A day counts when you open the app. The grid shows the last 53 weeks.")
+                Text("A day counts when you open the app. The activity grid shows the last 53 weeks.")
             }
 
             Section("Activity") {
-                ScrollView(.horizontal, showsIndicators: true) {
+                ScrollView(.horizontal, showsIndicators: false) {
                     ContributionHeatmapView(
-                        model: store.heatmapModel(),
+                        model: store.heatmapModelLast53Weeks(),
                         accessibilitySummary: store.accessibilitySummary
                     )
                 }

@@ -59,6 +59,11 @@ struct AppOpenStreakPersisted: Equatable, Sendable {
 
 // MARK: - Heatmap model
 
+/// Week count for the Today-card GitHub heatmap (filled grid spanning multiple months).
+enum HomeStreakHeatmap {
+    static let trailingWeekCount = 18
+}
+
 struct ContributionHeatmapCell: Identifiable, Equatable, Sendable {
     var id: String { "\(weekIndex)-\(weekdayIndex)" }
     let weekIndex: Int
@@ -66,6 +71,9 @@ struct ContributionHeatmapCell: Identifiable, Equatable, Sendable {
     let dayStart: Date
     let wasOpened: Bool
     let isFuture: Bool
+    /// Padding week cells before the first or after the last day of the visible month.
+    let isOutsideMonth: Bool
+    let isToday: Bool
 }
 
 struct ContributionHeatmapModel: Equatable, Sendable {
@@ -74,7 +82,8 @@ struct ContributionHeatmapModel: Equatable, Sendable {
     /// Short month labels for columns where the month changes (index = week column).
     let monthLabels: [Int: String]
 
-    static func build(
+    /// Last `weekCount` weeks ending on the week that contains `now` (full-year style grid).
+    static func buildLast53Weeks(
         now: Date = .now,
         calendar: Calendar = .current,
         openDayEpochs: Set<TimeInterval>,
@@ -108,7 +117,9 @@ struct ContributionHeatmapModel: Equatable, Sendable {
                         weekdayIndex: weekdayIndex,
                         dayStart: dayStart,
                         wasOpened: opened,
-                        isFuture: isFuture
+                        isFuture: isFuture,
+                        isOutsideMonth: false,
+                        isToday: calendar.isDate(dayStart, inSameDayAs: today)
                     )
                 )
             }
@@ -126,8 +137,65 @@ struct ContributionHeatmapModel: Equatable, Sendable {
         return ContributionHeatmapModel(cells: columns, monthLabels: monthLabels)
     }
 
+    /// GitHub-style grid: **fixed number of week columns** ending on the week that contains `now`, so the layout
+    /// is always filled and includes **earlier months**; the **rightmost** column is the current week (today outlined).
+    static func buildTrailingWeeksThroughToday(
+        now: Date = .now,
+        calendar: Calendar = .current,
+        openDayEpochs: Set<TimeInterval>,
+        weekCount: Int = HomeStreakHeatmap.trailingWeekCount
+    ) -> ContributionHeatmapModel {
+        let today = calendar.startOfDay(for: now)
+        guard let lastWeekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else {
+            return ContributionHeatmapModel(cells: [], monthLabels: [:])
+        }
+        let lastWeekStart = lastWeekInterval.start
+        guard let firstWeekStart = calendar.date(byAdding: .weekOfYear, value: -(weekCount - 1), to: lastWeekStart) else {
+            return ContributionHeatmapModel(cells: [], monthLabels: [:])
+        }
+
+        var columns: [[ContributionHeatmapCell]] = []
+        var monthLabels: [Int: String] = [:]
+        var previousMonth: Int?
+
+        for weekIndex in 0..<weekCount {
+            guard let weekStart = calendar.date(byAdding: .weekOfYear, value: weekIndex, to: firstWeekStart) else { continue }
+            var column: [ContributionHeatmapCell] = []
+            for weekdayIndex in 0..<7 {
+                guard let day = calendar.date(byAdding: .day, value: weekdayIndex, to: weekStart) else { continue }
+                let dayStart = calendar.startOfDay(for: day)
+                let epoch = dayStart.timeIntervalSince1970
+                let isFuture = dayStart > today
+                let opened = openDayEpochs.contains(epoch)
+                column.append(
+                    ContributionHeatmapCell(
+                        weekIndex: weekIndex,
+                        weekdayIndex: weekdayIndex,
+                        dayStart: dayStart,
+                        wasOpened: opened,
+                        isFuture: isFuture,
+                        isOutsideMonth: false,
+                        isToday: calendar.isDate(dayStart, inSameDayAs: today)
+                    )
+                )
+            }
+            if let firstDay = column.first?.dayStart {
+                let month = calendar.component(.month, from: firstDay)
+                if month != previousMonth {
+                    let sym = calendar.shortMonthSymbols[max(0, min(11, month - 1))]
+                    monthLabels[weekIndex] = sym
+                    previousMonth = month
+                }
+            }
+            columns.append(column)
+        }
+
+        return ContributionHeatmapModel(cells: columns, monthLabels: monthLabels)
+    }
+
+    /// Open days counted in the grid (not future, not outside-range padding).
     var activeDaysInWindow: Int {
-        cells.flatMap { $0 }.filter { !$0.isFuture && $0.wasOpened }.count
+        cells.flatMap { $0 }.filter { !$0.isFuture && !$0.isOutsideMonth && $0.wasOpened }.count
     }
 }
 
@@ -172,13 +240,29 @@ final class AppOpenStreakStore {
         openDayEpochs = s.openDayEpochs
     }
 
-    func heatmapModel(now: Date = .now, calendar: Calendar = .current) -> ContributionHeatmapModel {
-        ContributionHeatmapModel.build(now: now, calendar: calendar, openDayEpochs: openDayEpochs)
+    func heatmapModelLast53Weeks(now: Date = .now, calendar: Calendar = .current) -> ContributionHeatmapModel {
+        ContributionHeatmapModel.buildLast53Weeks(now: now, calendar: calendar, openDayEpochs: openDayEpochs)
+    }
+
+    /// GitHub-style heatmap on Today: fixed trailing weeks (includes earlier months), today in the rightmost column.
+    func heatmapModelHomeCard(now: Date = .now, calendar: Calendar = .current) -> ContributionHeatmapModel {
+        ContributionHeatmapModel.buildTrailingWeeksThroughToday(
+            now: now,
+            calendar: calendar,
+            openDayEpochs: openDayEpochs,
+            weekCount: HomeStreakHeatmap.trailingWeekCount
+        )
     }
 
     var accessibilitySummary: String {
-        let windowDays = heatmapModel().activeDaysInWindow
-        return "Current streak \(currentStreak) days, longest \(longestStreak) days, \(windowDays) active days in the last year."
+        let windowDays = heatmapModelLast53Weeks().activeDaysInWindow
+        return "Current streak \(currentStreak) days, longest \(longestStreak) days, \(windowDays) active days in the last 53 weeks."
+    }
+
+    /// VoiceOver line for the Today card heatmap.
+    var accessibilityMonthGridSummary: String {
+        let n = heatmapModelHomeCard().activeDaysInWindow
+        return "Grid shows the last \(HomeStreakHeatmap.trailingWeekCount) weeks including earlier months. You opened the app on \(n) of those days up to today. The rightmost column is the current week; today is outlined."
     }
 
     private static func load(from defaults: UserDefaults) -> AppOpenStreakPersisted {

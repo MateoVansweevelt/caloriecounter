@@ -100,13 +100,13 @@ struct TodayView: View {
                 Spacer(minLength: 0)
             }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                ContributionHeatmapView(
-                    model: streakStore.heatmapModel(),
-                    accessibilitySummary: streakStore.accessibilitySummary
-                )
-                .accessibilityHidden(true)
-            }
+            ContributionHeatmapView(
+                model: streakStore.heatmapModelHomeCard(),
+                accessibilitySummary: streakStore.accessibilitySummary + " " + streakStore.accessibilityMonthGridSummary,
+                scalesToFitWidth: true
+            )
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
 
             HStack {
                 streakLegendDot(color: Color.accentColor.opacity(0.85))
@@ -121,6 +121,11 @@ struct TodayView: View {
                 Spacer(minLength: 12)
                 streakLegendDot(color: Color.secondary.opacity(0.12))
                 Text("Upcoming")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendTodaySwatch()
+                Text("Today")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -138,6 +143,16 @@ struct TodayView: View {
             .frame(width: 10, height: 10)
     }
 
+    private func streakLegendTodaySwatch() -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(Color.secondary.opacity(0.22))
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .stroke(Color.accentColor, lineWidth: 2)
+        }
+        .frame(width: 10, height: 10)
+    }
+
     private var streakTitle: String {
         let n = streakStore.currentStreak
         if n <= 0 { return "Start your streak" }
@@ -152,7 +167,7 @@ struct TodayView: View {
     }
 
     private var streakCardAccessibilityLabel: String {
-        "\(streakTitle). \(streakSubtitle). \(streakStore.accessibilitySummary)"
+        "\(streakTitle). \(streakSubtitle). \(streakStore.accessibilitySummary) \(streakStore.accessibilityMonthGridSummary)"
     }
 
     private func mealsCard(model: TodayViewModel) -> some View {
