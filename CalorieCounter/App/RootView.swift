@@ -1,6 +1,8 @@
 import SwiftUI
+import UIKit
 
 struct RootView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selection: AppTab = .today
 
     var body: some View {
@@ -27,6 +29,14 @@ struct RootView: View {
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(.accentColor)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                AppOpenStreakStore.shared.recordOpenIfNeeded()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            AppOpenStreakStore.shared.recordOpenIfNeeded()
+        }
     }
 }
 

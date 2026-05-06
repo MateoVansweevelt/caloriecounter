@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var model: TodayViewModel?
+    private let streakStore = AppOpenStreakStore.shared
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,7 @@ struct TodayView: View {
             .background(backgroundGradient)
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear { streakStore.reloadFromDefaults() }
         }
         .task {
             if model == nil, let deps = dependencies {
@@ -35,6 +37,8 @@ struct TodayView: View {
                     consumedKcal: model.totals.energy.converted(to: .kilocalories).value,
                     targetKcal: model.targets.calories
                 )
+
+                streakCard
 
                 HStack(spacing: 12) {
                     MacroRing(
@@ -65,6 +69,80 @@ struct TodayView: View {
                 microsCard(model: model)
             }
         }
+    }
+
+    private var streakCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "flame.fill")
+                    .font(.title3)
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Daily opens")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(streakTitle)
+                        .font(.headline)
+                    Text(streakSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+
+            ScrollView(.horizontal, showsIndicators: true) {
+                ContributionHeatmapView(
+                    model: streakStore.heatmapModel(),
+                    accessibilitySummary: ""
+                )
+                .accessibilityHidden(true)
+            }
+
+            HStack {
+                streakLegendDot(color: Color.accentColor.opacity(0.85))
+                Text("Opened")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendDot(color: Color.secondary.opacity(0.22))
+                Text("No open")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendDot(color: Color.secondary.opacity(0.12))
+                Text("Future")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular, in: .rect(cornerRadius: 20))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(streakCardAccessibilityLabel))
+    }
+
+    private func streakLegendDot(color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(color)
+            .frame(width: 10, height: 10)
+    }
+
+    private var streakTitle: String {
+        let n = streakStore.currentStreak
+        if n <= 0 { return "Start your streak" }
+        if n == 1 { return "1 day streak" }
+        return "\(n) day streak"
+    }
+
+    private var streakSubtitle: String {
+        streakStore.currentStreak > 0
+            ? "Open the app daily to keep it going"
+            : "Open the app daily to build your streak"
+    }
+
+    private var streakCardAccessibilityLabel: String {
+        "\(streakTitle). \(streakSubtitle). \(streakStore.accessibilitySummary)"
     }
 
     private func mealsCard(model: TodayViewModel) -> some View {

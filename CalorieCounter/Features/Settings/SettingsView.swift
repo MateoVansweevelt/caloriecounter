@@ -31,6 +31,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 unitsSection
+                streakSection
                 personalSection
                 dailyGoalsSection
                 comingSoonSection
@@ -54,6 +55,18 @@ struct SettingsView: View {
     }
 
     // MARK: - Sections
+
+    private var streakSection: some View {
+        Section {
+            NavigationLink {
+                StreakView()
+            } label: {
+                Label("Daily streak", systemImage: "flame.fill")
+            }
+        } header: {
+            Text("Engagement")
+        }
+    }
 
     private var unitsSection: some View {
         Section("Units") {
