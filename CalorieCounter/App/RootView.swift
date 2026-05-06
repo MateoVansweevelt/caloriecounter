@@ -19,8 +19,8 @@ struct RootView: View {
                 AddFoodView()
             }
 
-            Tab("Meals", systemImage: "fork.knife", value: AppTab.meals) {
-                MealsListView()
+            Tab("Forecast", systemImage: "chart.line.uptrend.xyaxis", value: AppTab.forecast) {
+                MetabolismForecastView()
             }
 
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
@@ -40,7 +40,7 @@ struct RootView: View {
     }
 }
 
-enum AppTab: Hashable { case today, log, scan, meals, settings }
+enum AppTab: Hashable { case today, log, scan, forecast, settings }
 
 #Preview {
     RootView()

@@ -2,8 +2,13 @@ import SwiftUI
 
 struct LogbookView: View {
     @Environment(\.dependencies) private var dependencies
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var model: LogbookViewModel?
     @State private var editingEntry: LogEntry?
+
+    private var listRowSurface: Color {
+        reduceTransparency ? Color(.secondarySystemGroupedBackground) : Color.clear
+    }
 
     var body: some View {
         NavigationStack {
@@ -11,26 +16,9 @@ struct LogbookView: View {
                 if let model {
                     List {
                         Section {
-                            DatePicker(
-                                "Day",
-                                selection: Binding(
-                                    get: { model.selectedDay },
-                                    set: { model.selectedDay = $0 }
-                                ),
-                                displayedComponents: .date
-                            )
-                            .datePickerStyle(.compact)
-                            .onChange(of: model.selectedDay) { _, _ in
-                                Task { await model.load() }
-                            }
-                        }
-                        .listRowBackground(Color.clear)
-                        .listSectionSeparator(.hidden)
-
-                        Section {
                             totalsRow(model: model)
                         }
-                        .listRowBackground(Color.clear)
+                        .listRowBackground(listRowSurface)
                         .listRowSeparator(.hidden)
                         .listSectionSeparator(.hidden)
 
@@ -41,7 +29,7 @@ struct LogbookView: View {
                                     systemImage: "tray",
                                     description: Text("Pick another day or add something new.")
                                 )
-                                .listRowBackground(Color.clear)
+                                .listRowBackground(listRowSurface)
                             }
                             .listSectionSeparator(.hidden)
                         } else {
@@ -54,6 +42,7 @@ struct LogbookView: View {
                                                 entryRow(entry: entry)
                                             }
                                             .buttonStyle(.plain)
+                                            .listRowBackground(listRowSurface)
                                         }
                                         .onDelete { indexSet in
                                             Task {
@@ -76,7 +65,37 @@ struct LogbookView: View {
                 }
             }
             .navigationTitle("Log")
-            .background(backgroundGradient)
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                if let model {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        DatePicker(
+                            "Log date",
+                            selection: Binding(
+                                get: { model.selectedDay },
+                                set: { newDay in
+                                    model.selectedDay = newDay
+                                    Task { await model.load() }
+                                }
+                            ),
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .accessibilityLabel("Log date")
+                    }
+                }
+            }
+            .background {
+                Group {
+                    if reduceTransparency {
+                        Color(.systemGroupedBackground)
+                    } else {
+                        backgroundGradient
+                    }
+                }
+                .ignoresSafeArea()
+            }
         }
         .sheet(item: $editingEntry) { entry in
             EditLogEntryView(
@@ -116,7 +135,7 @@ struct LogbookView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .glassEffect(.regular, in: .rect(cornerRadius: 20))
     }
 
     private var backgroundGradient: some View {
@@ -125,7 +144,6 @@ struct LogbookView: View {
             startPoint: .top,
             endPoint: .bottom
         )
-        .ignoresSafeArea()
     }
 
     private func entryRow(entry: LogEntry) -> some View {

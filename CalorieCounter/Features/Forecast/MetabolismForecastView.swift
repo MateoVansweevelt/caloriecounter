@@ -1,7 +1,8 @@
 import Charts
 import SwiftUI
 
-struct WeightLossForecastView: View {
+/// BMR/TDEE estimates and the interactive weight-loss projection. Profile inputs live in Settings → Personal.
+struct MetabolismForecastView: View {
 
     @AppStorage(UnitSystem.storageKey) private var unitSystemRaw: String = UnitSystem.metric.rawValue
     @AppStorage(UserProfile.StorageKey.heightCm) private var heightCm: Double = 0
@@ -15,8 +16,7 @@ struct WeightLossForecastView: View {
     @State private var visibleActivities: Set<UserProfile.ActivityLevel> = Set(UserProfile.ActivityLevel.allCases)
     @State private var seriesList: [WeightLossForecastSimulator.Series] = []
 
-    private var unitSystem: UnitSystem { UnitSystem(rawValue: unitSystemRaw) ?? .metric }
-    private var isMetric: Bool { unitSystem == .metric }
+    private var isMetric: Bool { UnitSystem(rawValue: unitSystemRaw) == .metric }
 
     private var profile: UserProfile {
         UserProfile(
@@ -40,6 +40,7 @@ struct WeightLossForecastView: View {
             String(targetWeightKg),
             String(birthDateEpoch),
             sexRaw,
+            activityLevelRaw,
             String(calorieTarget)
         ].joined(separator: "|")
     }
@@ -143,52 +144,101 @@ struct WeightLossForecastView: View {
         return String(format: "%.2f", value)
     }
 
+    /// Profile and goals are complete enough to run the interactive chart and summary.
+    private var forecastChartAvailable: Bool {
+        canRunForecast && targetWeightKg > 0 && weightKg > targetWeightKg
+    }
+
     var body: some View {
-        List {
-            if !canRunForecast {
-                Section {
-                    ContentUnavailableView(
-                        "Incomplete profile",
-                        systemImage: "person.crop.circle.badge.questionmark",
-                        description: Text(missingDataMessage)
-                    )
+        NavigationStack {
+            List {
+                if forecastChartAvailable {
+                    chartSection
+                    summarySection
+                    disclaimerSection
                 }
-            } else if targetWeightKg <= 0 {
-                Section {
-                    ContentUnavailableView(
-                        "Set a target weight",
-                        systemImage: "target",
-                        description: Text("Add a goal weight in Settings → Personal. It should be below your current weight.")
-                    )
+
+                energyEstimatesSection
+
+                if !forecastChartAvailable {
+                    if !canRunForecast {
+                        Section {
+                            ContentUnavailableView(
+                                "Incomplete profile",
+                                systemImage: "person.crop.circle.badge.questionmark",
+                                description: Text(missingDataMessage)
+                            )
+                        }
+                    } else if targetWeightKg <= 0 {
+                        Section {
+                            ContentUnavailableView(
+                                "Set a target weight",
+                                systemImage: "target",
+                                description: Text("Add a goal weight under Personal in Settings. It should be below your current weight.")
+                            )
+                        }
+                    } else if weightKg <= targetWeightKg {
+                        Section {
+                            ContentUnavailableView(
+                                "Adjust your goal",
+                                systemImage: "arrow.down.circle",
+                                description: Text("Your target weight needs to be less than your current weight for a loss forecast.")
+                            )
+                        }
+                    }
                 }
-            } else if weightKg <= targetWeightKg {
-                Section {
-                    ContentUnavailableView(
-                        "Adjust your goal",
-                        systemImage: "arrow.down.circle",
-                        description: Text("Your target weight needs to be less than your current weight for a loss forecast.")
-                    )
+
+                activityLegendSection
+            }
+            .navigationTitle("Energy & forecast")
+            .navigationBarTitleDisplayMode(.inline)
+            .scrollDismissesKeyboard(.interactively)
+            .task(id: simulationInputsKey) {
+                guard canRunForecast, targetWeightKg > 0, weightKg > targetWeightKg else {
+                    seriesList = []
+                    return
                 }
-            } else {
-                summarySection
-                chartSection
-                disclaimerSection
+                seriesList = WeightLossForecastSimulator.allActivitySeries(
+                    profile: profile,
+                    targetWeightKg: targetWeightKg,
+                    dailyCalorieIntake: calorieTarget
+                )
+            }
+        }
+    }
+
+    private var energyEstimatesSection: some View {
+        Section {
+            if let bmr = profile.bmr {
+                LabeledContent {
+                    Text("\(Int(bmr.rounded())) kcal")
+                        .foregroundStyle(.secondary)
+                } label: {
+                    acronymLabel(title: "BMR", expansion: "Basal metabolic rate", meaning: "Energy your body uses at complete rest, before activity.")
+                }
             }
 
-            activityLegendSection
-        }
-        .navigationTitle("Weight loss forecast")
-        .navigationBarTitleDisplayMode(.inline)
-        .task(id: simulationInputsKey) {
-            guard canRunForecast, targetWeightKg > 0, weightKg > targetWeightKg else {
-                seriesList = []
-                return
+            if let tdee = profile.tdee {
+                LabeledContent {
+                    Text("\(Int(tdee.rounded())) kcal")
+                        .foregroundStyle(.secondary)
+                } label: {
+                    acronymLabel(title: "TDEE", expansion: "Total daily energy expenditure", meaning: "Estimated calories burned in a typical day, including BMR and your activity level.")
+                }
             }
-            seriesList = WeightLossForecastSimulator.allActivitySeries(
-                profile: profile,
-                targetWeightKg: targetWeightKg,
-                dailyCalorieIntake: calorieTarget
-            )
+
+            if profile.bmr == nil {
+                ContentUnavailableView(
+                    "Profile incomplete",
+                    systemImage: "person.text.rectangle",
+                    description: Text("Add height, weight, date of birth, sex, and activity level under Personal in Settings to see BMR and TDEE.")
+                )
+            }
+        } header: {
+            Text("Today’s energy")
+        } footer: {
+            Text("Mifflin–St Jeor BMR and TDEE (BMR × activity multiplier). Uses the same values as Settings → Personal.")
+                .font(.footnote)
         }
     }
 
@@ -202,7 +252,7 @@ struct WeightLossForecastView: View {
         if weightKg <= 0 { parts.append("current weight") }
         if birthDateEpoch <= 0 { parts.append("date of birth") }
         if calorieTarget <= 0 { parts.append("calorie goal") }
-        return "Enter your " + parts.joined(separator: ", ") + " in Settings to run the forecast."
+        return "Enter your " + parts.joined(separator: ", ") + " under Personal in Settings to run the forecast."
     }
 
     private var userForecastSeries: WeightLossForecastSimulator.Series? {
@@ -248,7 +298,7 @@ struct WeightLossForecastView: View {
                 }
             }
         } header: {
-            Text("Summary")
+            Text("Weight loss forecast")
         } footer: {
             Text(
                 "Each curve assumes you eat your calorie target every day and that activity stays the same while mass changes. Basal metabolic rate (BMR) is recomputed daily with Mifflin–St Jeor. Total daily energy expenditure (TDEE) is BMR × an activity multiplier (PAL)."
@@ -423,6 +473,18 @@ struct WeightLossForecastView: View {
         return String(format: "~%.1f years (%d days)", y, days)
     }
 
+    /// Two-line label for metrics commonly written as acronyms (BMR, TDEE, …).
+    private func acronymLabel(title: String, expansion: String, meaning: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+            Text("\(expansion). \(meaning)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(expansion). \(meaning)")
+    }
+
     /// Rounds `approxMax / targetDivisions` to a human-readable step (1–2–5 × 10ⁿ).
     private static func niceAxisStride(approxMax: Double, targetDivisions: Double) -> Double {
         guard approxMax > 0, targetDivisions > 0 else { return 1 }
@@ -456,7 +518,5 @@ private struct ForecastChartPoint: Identifiable {
 }
 
 #Preview {
-    NavigationStack {
-        WeightLossForecastView()
-    }
+    MetabolismForecastView()
 }

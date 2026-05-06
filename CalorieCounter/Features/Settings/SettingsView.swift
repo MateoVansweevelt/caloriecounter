@@ -32,6 +32,7 @@ struct SettingsView: View {
             Form {
                 unitsSection
                 streakSection
+                mealsSection
                 personalSection
                 dailyGoalsSection
                 comingSoonSection
@@ -68,6 +69,16 @@ struct SettingsView: View {
         }
     }
 
+    private var mealsSection: some View {
+        Section("Meals") {
+            NavigationLink {
+                MealsListView()
+            } label: {
+                Label("Your meals", systemImage: "fork.knife")
+            }
+        }
+    }
+
     private var unitsSection: some View {
         Section("Units") {
             Picker("Measurement system", selection: unitSystemBinding) {
@@ -84,12 +95,6 @@ struct SettingsView: View {
             heightRow
             weightRow
             targetWeightRow
-
-            NavigationLink {
-                WeightLossForecastView()
-            } label: {
-                Label("Weight loss forecast", systemImage: "chart.line.uptrend.xyaxis")
-            }
 
             DatePicker(
                 "Date of Birth",
@@ -119,28 +124,10 @@ struct SettingsView: View {
                     .tag(level)
                 }
             }
-
-            if let bmr = currentProfile.bmr {
-                LabeledContent {
-                    Text("\(Int(bmr.rounded())) kcal")
-                        .foregroundStyle(.secondary)
-                } label: {
-                    acronymLabel(title: "BMR", expansion: "Basal metabolic rate", meaning: "Energy your body uses at complete rest, before activity.")
-                }
-            }
-
-            if let tdee = currentProfile.tdee {
-                LabeledContent {
-                    Text("\(Int(tdee.rounded())) kcal")
-                        .foregroundStyle(.secondary)
-                } label: {
-                    acronymLabel(title: "TDEE", expansion: "Total daily energy expenditure", meaning: "Estimated calories burned in a typical day, including BMR and your activity level.")
-                }
-            }
         } header: {
             Text("Personal")
         } footer: {
-            Text("Used to calculate your Basal Metabolic Rate (Mifflin–St Jeor) and daily calorie goal. Changing these values automatically updates Daily Goals below. Set a target weight to unlock the weight loss forecast.")
+            Text("Used with Mifflin–St Jeor to estimate your daily burn and calorie goal. Changing these values updates Daily Goals below. Open the Forecast tab for BMR, TDEE, and a weight-loss projection.")
         }
         .onChange(of: heightCm,        recalculateGoals)
         .onChange(of: weightKg,        recalculateGoals)
@@ -371,18 +358,6 @@ struct SettingsView: View {
                 Text(unit).foregroundStyle(.secondary)
             }
         }
-    }
-
-    /// Two-line label for metrics commonly written as acronyms (BMR, TDEE, …).
-    private func acronymLabel(title: String, expansion: String, meaning: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-            Text("\(expansion). \(meaning)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title), \(expansion). \(meaning)")
     }
 }
 

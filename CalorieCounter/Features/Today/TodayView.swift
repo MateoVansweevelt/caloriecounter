@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodayView: View {
     @Environment(\.dependencies) private var dependencies
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var model: TodayViewModel?
     private let streakStore = AppOpenStreakStore.shared
 
@@ -16,7 +17,16 @@ struct TodayView: View {
             }
             .contentMargins(.horizontal, 20, for: .scrollContent)
             .contentMargins(.vertical, 12, for: .scrollContent)
-            .background(backgroundGradient)
+            .background {
+                Group {
+                    if reduceTransparency {
+                        Color(.systemGroupedBackground)
+                    } else {
+                        backgroundGradient
+                    }
+                }
+                .ignoresSafeArea()
+            }
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(.large)
             .onAppear { streakStore.reloadFromDefaults() }
@@ -78,7 +88,7 @@ struct TodayView: View {
                     .font(.title3)
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Daily opens")
+                    Text("Open days")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(streakTitle)
@@ -90,34 +100,34 @@ struct TodayView: View {
                 Spacer(minLength: 0)
             }
 
-            ScrollView(.horizontal, showsIndicators: true) {
+            ScrollView(.horizontal, showsIndicators: false) {
                 ContributionHeatmapView(
                     model: streakStore.heatmapModel(),
-                    accessibilitySummary: ""
+                    accessibilitySummary: streakStore.accessibilitySummary
                 )
                 .accessibilityHidden(true)
             }
 
             HStack {
                 streakLegendDot(color: Color.accentColor.opacity(0.85))
-                Text("Opened")
+                Text("Active")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 12)
                 streakLegendDot(color: Color.secondary.opacity(0.22))
-                Text("No open")
+                Text("Missed")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 12)
                 streakLegendDot(color: Color.secondary.opacity(0.12))
-                Text("Future")
+                Text("Upcoming")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 20))
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(streakCardAccessibilityLabel))
     }
@@ -137,8 +147,8 @@ struct TodayView: View {
 
     private var streakSubtitle: String {
         streakStore.currentStreak > 0
-            ? "Open the app daily to keep it going"
-            : "Open the app daily to build your streak"
+            ? "Check in each day to keep your streak"
+            : "Check in each day to start a streak"
     }
 
     private var streakCardAccessibilityLabel: String {
@@ -155,7 +165,8 @@ struct TodayView: View {
                     description: Text("Tap Add Food to log your first item.")
                 )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
             } else {
                 let visibleSlots = MealSlot.allCases.filter {
                     model.groupedBySlot[$0]?.isEmpty == false
@@ -171,7 +182,7 @@ struct TodayView: View {
             }
         }
         .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
     }
 
     private func mealSection(slot: MealSlot, entries: [LogEntry]) -> some View {
@@ -215,7 +226,7 @@ struct TodayView: View {
                     }
                 }
                 .padding(20)
-                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                .glassEffect(.regular, in: .rect(cornerRadius: 22))
             }
         }
     }
@@ -229,7 +240,6 @@ struct TodayView: View {
             startPoint: .top,
             endPoint: .bottom
         )
-        .ignoresSafeArea()
     }
 }
 

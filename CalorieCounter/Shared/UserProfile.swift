@@ -80,7 +80,7 @@ struct UserProfile: Sendable {
     }
 
     // MARK: - Stored properties
-    // HealthKit swap: replace @AppStorage reads in SettingsView with HKHealthStore queries.
+    // HealthKit swap: replace @AppStorage reads in Settings / Forecast with HKHealthStore queries.
 
     /// Height in centimetres. 0 means not set.
     /// HealthKit: HKQuantityTypeIdentifier.height
