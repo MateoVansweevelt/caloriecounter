@@ -4,7 +4,8 @@ import Testing
 
 // MARK: - Mock URLProtocol
 final class MockURLProtocol: URLProtocol {
-    static var handler: ((URLRequest) throws -> (Data, HTTPURLResponse))?
+    /// Test-only global; URLProtocol callbacks are not actor-isolated. Suite tests run sequentially.
+    nonisolated(unsafe) static var handler: ((URLRequest) throws -> (Data, HTTPURLResponse))?
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
@@ -37,8 +38,8 @@ private func makeSession() -> URLSession {
     return URLSession(configuration: config)
 }
 
-@Suite("OpenFoodFactsClient")
-actor OpenFoodFactsClientTests {
+@Suite("OpenFoodFactsClient", .serialized)
+struct OpenFoodFactsClientTests {
 
     @Test("lookup caches successful responses")
     func lookupCachesSuccessfulResponse() async throws {

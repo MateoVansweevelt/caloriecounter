@@ -61,6 +61,22 @@ struct UserProfile: Sendable {
             case .extraActive:      1.9
             }
         }
+
+        /// Longer copy for the weight-loss forecast screen (PAL categories are inherently fuzzy).
+        var forecastExplanation: String {
+            switch self {
+            case .sedentary:
+                "Mostly sitting or standing in place with little deliberate exercise. Think desk work, driving, or light housework with almost no cardio or strength training."
+            case .lightlyActive:
+                "You move regularly day to day and/or exercise lightly about one to three times per week. Examples include short walks, easy cycling, or a job where you are on your feet part of the day."
+            case .moderatelyActive:
+                "Structured exercise about three to five days per week at moderate intensity, or a fairly active job combined with occasional workouts. This is a common default for people who train most weekdays."
+            case .veryActive:
+                "Hard training most days of the week, long endurance sessions, or a physically demanding job plus regular workouts. Energy needs are much higher than a typical office routine."
+            case .extraActive:
+                "Very high daily output: competitive athletes, heavy manual labour, or twice-a-day training. This tier assumes you are rarely sedentary and recover between demanding sessions."
+            }
+        }
     }
 
     // MARK: - Stored properties
@@ -103,6 +119,12 @@ struct UserProfile: Sendable {
         bmr.map { $0 * activityLevel.multiplier }
     }
 
+    /// Mifflin–St Jeor BMR (kcal/day) for a hypothetical body mass using this profile’s height, age, and sex.
+    func bmr(atWeightKg massKg: Double) -> Double? {
+        guard let age, age > 0, heightCm > 0, massKg > 0 else { return nil }
+        return 10 * massKg + 6.25 * heightCm - 5 * Double(age) + sex.bmrOffset
+    }
+
     // MARK: - Storage keys
 
     enum StorageKey {
@@ -110,6 +132,8 @@ struct UserProfile: Sendable {
         static let birthDateEpoch = "userProfile.birthDateEpoch"
         static let heightCm       = "userProfile.heightCm"
         static let weightKg       = "userProfile.weightKg"
+        /// Goal mass in kg; 0 means not set.
+        static let targetWeightKg = "userProfile.targetWeightKg"
         static let sex            = "userProfile.sex"
         static let activityLevel  = "userProfile.activityLevel"
     }

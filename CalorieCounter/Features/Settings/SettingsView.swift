@@ -12,6 +12,7 @@ struct SettingsView: View {
 
     @AppStorage(UserProfile.StorageKey.heightCm)       private var heightCm: Double = 0
     @AppStorage(UserProfile.StorageKey.weightKg)       private var weightKg: Double = 0
+    @AppStorage(UserProfile.StorageKey.targetWeightKg) private var targetWeightKg: Double = 0
     /// Stored as seconds since Unix epoch; 0 means the user has not set a birthdate.
     @AppStorage(UserProfile.StorageKey.birthDateEpoch) private var birthDateEpoch: Double = 0
     @AppStorage(UserProfile.StorageKey.sex)            private var sexRaw: String = UserProfile.BiologicalSex.male.rawValue
@@ -69,6 +70,13 @@ struct SettingsView: View {
         Section {
             heightRow
             weightRow
+            targetWeightRow
+
+            NavigationLink {
+                WeightLossForecastView()
+            } label: {
+                Label("Weight loss forecast", systemImage: "chart.line.uptrend.xyaxis")
+            }
 
             DatePicker(
                 "Date of Birth",
@@ -115,7 +123,7 @@ struct SettingsView: View {
         } header: {
             Text("Personal")
         } footer: {
-            Text("Used to calculate your Basal Metabolic Rate (Mifflin–St Jeor) and daily calorie goal. Changing these values automatically updates Daily Goals below.")
+            Text("Used to calculate your Basal Metabolic Rate (Mifflin–St Jeor) and daily calorie goal. Changing these values automatically updates Daily Goals below. Set a target weight to unlock the weight loss forecast.")
         }
         .onChange(of: heightCm,        recalculateGoals)
         .onChange(of: weightKg,        recalculateGoals)
@@ -153,6 +161,18 @@ struct SettingsView: View {
         LabeledContent("Weight") {
             HStack(spacing: 4) {
                 TextField(isMetric ? "kg" : "lbs", value: weightDisplayBinding, format: .number)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 80)
+                Text(isMetric ? "kg" : "lbs").foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var targetWeightRow: some View {
+        LabeledContent("Target weight") {
+            HStack(spacing: 4) {
+                TextField(isMetric ? "kg" : "lbs", value: targetWeightDisplayBinding, format: .number)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 80)
@@ -290,6 +310,16 @@ struct SettingsView: View {
                 return isMetric ? weightKg : (weightKg * 2.20462 * 10).rounded() / 10
             },
             set: { weightKg = isMetric ? $0 : $0 / 2.20462 }
+        )
+    }
+
+    private var targetWeightDisplayBinding: Binding<Double> {
+        Binding(
+            get: {
+                guard targetWeightKg > 0 else { return 0 }
+                return isMetric ? targetWeightKg : (targetWeightKg * 2.20462 * 10).rounded() / 10
+            },
+            set: { targetWeightKg = isMetric ? $0 : $0 / 2.20462 }
         )
     }
 

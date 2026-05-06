@@ -12,6 +12,10 @@ This repo is a **SwiftUI** iOS app (`CalorieCounter.xcodeproj`, scheme `CalorieC
 - **Ambiguity:** If product behavior, acceptance criteria, or a breaking architectural choice is unclear, ask a short clarifying question instead of guessing.
 - **Handoff:** When you finish meaningful work, state what changed, which parts of the app or domain are affected, and how to verify it (including the simulator steps below).
 
+## Design
+
+When adding new ui components to the app, they should strictly and religously follow the most current Apple design principles.
+
 ## Git workflow
 
 ### Branches
@@ -56,3 +60,5 @@ xcodebuild -project CalorieCounter.xcodeproj -scheme CalorieCounter \
 If you changed test-covered areas, also run tests on each destination (replace `build` with `test`). If a simulator name is unavailable on the machine, list devices with `xcrun simctl list devices available` and use the closest matching **iPhone 17** / **iPhone 17 Pro Max** runtime, then note the substitution.
 
 Do not skip this dual-simulator check after additive changes.
+
+If the simulation shows unexpected behavior, go back to the code, fix what needs to be fixed and run the simulator again. Repeat this however many times is needed in order to fix the issue.

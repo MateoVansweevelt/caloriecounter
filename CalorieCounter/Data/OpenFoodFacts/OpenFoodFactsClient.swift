@@ -31,6 +31,8 @@ public actor OpenFoodFactsClient: NutritionProvider {
             (data, response) = try await session.data(for: request)
         } catch is CancellationError {
             throw NutritionLookupError.cancelled
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            throw NutritionLookupError.cancelled
         } catch {
             throw NutritionLookupError.network(underlying: error.localizedDescription)
         }

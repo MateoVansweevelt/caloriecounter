@@ -5,6 +5,7 @@ import Testing
 @testable import CalorieCounter
 
 @Suite("AppDependencies")
+@MainActor
 struct AppDependenciesTests {
 
     @Test("EnvironmentValues stores and retrieves dependencies")
