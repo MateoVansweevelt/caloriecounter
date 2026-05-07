@@ -55,6 +55,66 @@ struct CalorieRingWidget: Widget {
     }
 }
 
+struct MacrosEntry: TimelineEntry {
+    let date: Date
+    let snapshot: MacroSnapshot
+    let isStale: Bool
+}
+
+struct MacrosProvider: TimelineProvider {
+    func placeholder(in context: Context) -> MacrosEntry {
+        MacrosEntry(date: .now, snapshot: .placeholder, isStale: false)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (MacrosEntry) -> Void) {
+        completion(currentEntry())
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<MacrosEntry>) -> Void) {
+        let entry = currentEntry()
+        let next = Calendar.current.date(byAdding: .minute, value: 15, to: .now) ?? .now.addingTimeInterval(900)
+        completion(Timeline(entries: [entry], policy: .after(next)))
+    }
+
+    private func currentEntry() -> MacrosEntry {
+        let today = Calendar.current.startOfDay(for: .now)
+        if let stored = MacroSnapshotStore.load() {
+            let isStale = stored.dayStart != today
+            let snapshot = isStale
+                ? MacroSnapshot(
+                    consumedCarbsGrams: 0,
+                    consumedProteinGrams: 0,
+                    consumedFatGrams: 0,
+                    targetCarbsGrams: stored.targetCarbsGrams,
+                    targetProteinGrams: stored.targetProteinGrams,
+                    targetFatGrams: stored.targetFatGrams,
+                    dayStart: today
+                )
+                : stored
+            return MacrosEntry(date: .now, snapshot: snapshot, isStale: isStale)
+        }
+        return MacrosEntry(date: .now, snapshot: .placeholder, isStale: false)
+    }
+}
+
+struct MacrosWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: CalorieWidgetKind.macros, provider: MacrosProvider()) { entry in
+            MacrosWidgetView(entry: entry)
+                .containerBackground(for: .widget) {
+                    LinearGradient(
+                        colors: [Color.accentColor.opacity(0.22), Color(.systemBackground)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
+        }
+        .configurationDisplayName("Macros")
+        .description("Today's carbs, protein, and fat vs your targets.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
 struct CalorieRingWidgetView: View {
     let entry: CalorieRingEntry
     @Environment(\.widgetFamily) private var family
@@ -116,6 +176,75 @@ struct CalorieRingWidgetView: View {
     }
 }
 
+struct MacrosWidgetView: View {
+    let entry: MacrosEntry
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        switch family {
+        case .systemMedium:
+            HStack(spacing: 10) {
+                macroRing(title: "Carbs", consumed: entry.snapshot.consumedCarbsGrams, target: entry.snapshot.targetCarbsGrams, tint: .orange)
+                macroRing(title: "Protein", consumed: entry.snapshot.consumedProteinGrams, target: entry.snapshot.targetProteinGrams, tint: .pink)
+                macroRing(title: "Fat", consumed: entry.snapshot.consumedFatGrams, target: entry.snapshot.targetFatGrams, tint: .yellow)
+            }
+        default:
+            VStack(alignment: .leading, spacing: 8) {
+                macroRow(title: "Carbs", consumed: entry.snapshot.consumedCarbsGrams, target: entry.snapshot.targetCarbsGrams, tint: .orange)
+                macroRow(title: "Protein", consumed: entry.snapshot.consumedProteinGrams, target: entry.snapshot.targetProteinGrams, tint: .pink)
+                macroRow(title: "Fat", consumed: entry.snapshot.consumedFatGrams, target: entry.snapshot.targetFatGrams, tint: .yellow)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func macroRing(title: String, consumed: Double, target: Double, tint: Color) -> some View {
+        let progress: CGFloat = target > 0 ? CGFloat(min(1.0, consumed / target)) : 0
+        return VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .stroke(tint.opacity(0.18), lineWidth: 8)
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(tint, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Text("\(Int(consumed.rounded()))")
+                    .font(.system(.caption, design: .rounded).weight(.semibold))
+                    .monospacedDigit()
+            }
+            .frame(width: 56, height: 56)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func macroRow(title: String, consumed: Double, target: Double, tint: Color) -> some View {
+        let progress: CGFloat = target > 0 ? CGFloat(min(1.0, consumed / target)) : 0
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                Spacer()
+                Text("\(Int(consumed.rounded())) / \(Int(target))g")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(tint.opacity(0.18))
+                    Capsule()
+                        .fill(tint)
+                        .frame(width: proxy.size.width * progress)
+                }
+            }
+            .frame(height: 7)
+        }
+    }
+}
+
 #Preview(as: .systemSmall) {
     CalorieRingWidget()
 } timeline: {
@@ -131,4 +260,16 @@ struct CalorieRingWidgetView: View {
     CalorieRingWidget()
 } timeline: {
     CalorieRingEntry(date: .now, snapshot: .placeholder, isStale: false)
+}
+
+#Preview(as: .systemSmall) {
+    MacrosWidget()
+} timeline: {
+    MacrosEntry(date: .now, snapshot: .placeholder, isStale: false)
+}
+
+#Preview(as: .systemMedium) {
+    MacrosWidget()
+} timeline: {
+    MacrosEntry(date: .now, snapshot: .placeholder, isStale: false)
 }

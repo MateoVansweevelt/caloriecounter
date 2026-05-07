@@ -5,5 +5,6 @@ import SwiftUI
 struct CalorieCounterWidgetBundle: WidgetBundle {
     var body: some Widget {
         CalorieRingWidget()
+        MacrosWidget()
     }
 }
