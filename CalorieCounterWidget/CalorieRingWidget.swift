@@ -199,7 +199,7 @@ struct MacrosWidgetView: View {
     }
 
     private func macroRing(title: String, consumed: Double, target: Double, tint: Color) -> some View {
-        let progress = target > 0 ? min(1.0, consumed / target) : 0
+        let progress: CGFloat = target > 0 ? CGFloat(min(1.0, consumed / target)) : 0
         return VStack(spacing: 6) {
             ZStack {
                 Circle()
@@ -221,7 +221,7 @@ struct MacrosWidgetView: View {
     }
 
     private func macroRow(title: String, consumed: Double, target: Double, tint: Color) -> some View {
-        let progress = target > 0 ? min(1.0, consumed / target) : 0
+        let progress: CGFloat = target > 0 ? CGFloat(min(1.0, consumed / target)) : 0
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(title)
