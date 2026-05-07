@@ -63,4 +63,13 @@ public struct ConsumedNutrition: Hashable, Sendable, Codable {
             micros: lhs.micros + rhs.micros
         )
     }
+
+    /// Gram totals for the shared calorie snapshot / Watch companion.
+    public var macroGrams: (carbs: Double, protein: Double, fat: Double) {
+        (
+            macros.carbohydrates.converted(to: .grams).value,
+            macros.protein.converted(to: .grams).value,
+            macros.fat.converted(to: .grams).value
+        )
+    }
 }

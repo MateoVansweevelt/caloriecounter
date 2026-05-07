@@ -1,5 +1,4 @@
 import Foundation
-import WidgetKit
 
 /// Wraps any LogbookRepository and mirrors every mutation to a HealthRepository.
 /// Health sync failures are swallowed so they never prevent food from being logged.
@@ -47,25 +46,14 @@ actor HealthSyncingLogbookRepository: LogbookRepository {
         let today = Date.now
         guard let entries = try? await inner.entries(on: today) else { return }
         let totals = DailyTotals.totals(for: entries)
-        let targets = NutritionTargets.fromUserDefaults()
-        let dayStart = Calendar.current.startOfDay(for: today)
-        let calorieSnapshot = CalorieSnapshot(
-            consumedKcal: totals.energy.converted(to: .kilocalories).value,
-            targetKcal: targets.calories,
-            dayStart: dayStart
+        let consumed = totals.energy.converted(to: .kilocalories).value
+        let g = totals.macroGrams
+        await CalorieSnapshotStore.publishTodayRing(
+            consumedKcal: consumed,
+            consumedCarbsG: g.carbs,
+            consumedProteinG: g.protein,
+            consumedFatG: g.fat,
+            day: today
         )
-        let macroSnapshot = MacroSnapshot(
-            consumedCarbsGrams: totals.macros.carbohydrates.converted(to: .grams).value,
-            consumedProteinGrams: totals.macros.protein.converted(to: .grams).value,
-            consumedFatGrams: totals.macros.fat.converted(to: .grams).value,
-            targetCarbsGrams: targets.carbsGrams,
-            targetProteinGrams: targets.proteinGrams,
-            targetFatGrams: targets.fatGrams,
-            dayStart: dayStart
-        )
-        CalorieSnapshotStore.save(calorieSnapshot)
-        MacroSnapshotStore.save(macroSnapshot)
-        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
-        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.macros)
     }
 }

@@ -29,7 +29,18 @@ struct CalorieRingProvider: TimelineProvider {
         if let stored = CalorieSnapshotStore.load() {
             let isStale = stored.dayStart != today
             let snapshot = isStale
-                ? CalorieSnapshot(consumedKcal: 0, targetKcal: stored.targetKcal, dayStart: today)
+                ? CalorieSnapshot(
+                    consumedKcal: 0,
+                    targetKcal: stored.targetKcal,
+                    consumedCarbsG: 0,
+                    consumedProteinG: 0,
+                    consumedFatG: 0,
+                    targetCarbsG: stored.targetCarbsG,
+                    targetProteinG: stored.targetProteinG,
+                    targetFatG: stored.targetFatG,
+                    dayStart: today,
+                    updatedAt: stored.updatedAt
+                )
                 : stored
             return CalorieRingEntry(date: .now, snapshot: snapshot, isStale: isStale)
         }
@@ -251,7 +262,17 @@ struct MacrosWidgetView: View {
     CalorieRingEntry(date: .now, snapshot: .placeholder, isStale: false)
     CalorieRingEntry(
         date: .now,
-        snapshot: CalorieSnapshot(consumedKcal: 2100, targetKcal: 2200, dayStart: Calendar.current.startOfDay(for: .now)),
+        snapshot: CalorieSnapshot(
+            consumedKcal: 2100,
+            targetKcal: 2200,
+            consumedCarbsG: 200,
+            consumedProteinG: 130,
+            consumedFatG: 65,
+            targetCarbsG: 250,
+            targetProteinG: 140,
+            targetFatG: 70,
+            dayStart: Calendar.current.startOfDay(for: .now)
+        ),
         isStale: false
     )
 }

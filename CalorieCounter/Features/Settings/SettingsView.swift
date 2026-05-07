@@ -1,6 +1,9 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
+    @Environment(\.dependencies) private var dependencies
+    @State private var isForceSyncingWidget = false
 
     // MARK: - Unit system
 
@@ -31,8 +34,11 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 unitsSection
+                streakSection
+                mealsSection
                 personalSection
                 dailyGoalsSection
+                widgetSection
                 comingSoonSection
                 aboutSection
             }
@@ -49,11 +55,36 @@ struct SettingsView: View {
             // Heal macros that may have been zeroed by a previous bad state.
             .onAppear(perform: restoreInvalidMacros)
             // Cascade calorie changes into proportional macro adjustments.
-            .onChange(of: calories, adjustMacros)
+            .onChange(of: calories) { oldValue, newValue in
+                adjustMacros(from: oldValue, to: newValue)
+                refreshCalorieWidgetFromLogbook()
+            }
         }
     }
 
     // MARK: - Sections
+
+    private var streakSection: some View {
+        Section {
+            NavigationLink {
+                StreakView()
+            } label: {
+                Label("Daily streak", systemImage: "flame.fill")
+            }
+        } header: {
+            Text("Engagement")
+        }
+    }
+
+    private var mealsSection: some View {
+        Section("Meals") {
+            NavigationLink {
+                MealsListView()
+            } label: {
+                Label("Your meals", systemImage: "fork.knife")
+            }
+        }
+    }
 
     private var unitsSection: some View {
         Section("Units") {
@@ -71,12 +102,6 @@ struct SettingsView: View {
             heightRow
             weightRow
             targetWeightRow
-
-            NavigationLink {
-                WeightLossForecastView()
-            } label: {
-                Label("Weight loss forecast", systemImage: "chart.line.uptrend.xyaxis")
-            }
 
             DatePicker(
                 "Date of Birth",
@@ -106,24 +131,10 @@ struct SettingsView: View {
                     .tag(level)
                 }
             }
-
-            if let bmr = currentProfile.bmr {
-                LabeledContent("BMR") {
-                    Text("\(Int(bmr.rounded())) kcal")
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            if let tdee = currentProfile.tdee {
-                LabeledContent("Estimated TDEE") {
-                    Text("\(Int(tdee.rounded())) kcal")
-                        .foregroundStyle(.secondary)
-                }
-            }
         } header: {
             Text("Personal")
         } footer: {
-            Text("Used to calculate your Basal Metabolic Rate (Mifflin–St Jeor) and daily calorie goal. Changing these values automatically updates Daily Goals below. Set a target weight to unlock the weight loss forecast.")
+            Text("Used with Mifflin–St Jeor to estimate your daily burn and calorie goal. Changing these values updates Daily Goals below. Open the Forecast tab for BMR, TDEE, and a weight-loss projection.")
         }
         .onChange(of: heightCm,        recalculateGoals)
         .onChange(of: weightKg,        recalculateGoals)
@@ -197,6 +208,27 @@ struct SettingsView: View {
                 fat      = NutritionTargets.default.fatGrams
             }
             .font(.footnote)
+        }
+    }
+
+    private var widgetSection: some View {
+        Section {
+            Button {
+                Task { await forceSyncCalorieWidget() }
+            } label: {
+                HStack {
+                    Label("Sync home screen widget", systemImage: "arrow.triangle.2.circlepath")
+                    Spacer()
+                    if isForceSyncingWidget {
+                        ProgressView()
+                    }
+                }
+            }
+            .disabled(isForceSyncingWidget || dependencies?.logbook == nil)
+        } header: {
+            Text("Widget")
+        } footer: {
+            Text("Updates the shared calorie snapshot from your log and reloads the widget. Use this if the ring does not match the app.")
         }
     }
 
@@ -342,6 +374,20 @@ struct SettingsView: View {
             get: { UserProfile.ActivityLevel(rawValue: activityLevelRaw) ?? .moderatelyActive },
             set: { activityLevelRaw = $0.rawValue }
         )
+    }
+
+    private func refreshCalorieWidgetFromLogbook() {
+        guard let logbook = dependencies?.logbook else { return }
+        Task { await TodaySnapshotPublisher.refresh(logbook: logbook) }
+    }
+
+    @MainActor
+    private func forceSyncCalorieWidget() async {
+        guard let logbook = dependencies?.logbook else { return }
+        isForceSyncingWidget = true
+        defer { isForceSyncingWidget = false }
+        await TodaySnapshotPublisher.forceSync(logbook: logbook)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private func goalRow(label: String, unit: String, value: Binding<Double>) -> some View {

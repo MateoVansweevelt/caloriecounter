@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A100000000000000000000D4 /* CalorieCounterWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D3 /* CalorieCounterWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A100000000000000000000D6 /* CalorieCounterWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A100000000000000000000D5 /* CalorieCounterWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +26,13 @@
 			remoteGlobalIDString = A100000000000000000000E5;
 			remoteInfo = CalorieCounterWidget;
 		};
+		A100000000000000000000EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A100000000000000000000E0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A100000000000000000000ED;
+			remoteInfo = CalorieCounterWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,12 +47,24 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A100000000000000000000EC /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A100000000000000000000D6 /* CalorieCounterWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A100000000000000000000D1 /* CalorieCounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalorieCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100000000000000000000D2 /* CalorieCounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalorieCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A100000000000000000000D3 /* CalorieCounterWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CalorieCounterWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A100000000000000000000D5 /* CalorieCounterWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalorieCounterWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -62,13 +82,21 @@
 			);
 			target = A100000000000000000000E5 /* CalorieCounterWidget */;
 		};
+		A100000000000000000000AB /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A100000000000000000000ED /* CalorieCounterWatch */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A100000000000000000000A1 /* CalorieCounter */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter; sourceTree = "<group>"; };
 		A100000000000000000000A2 /* CalorieCounterTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterTests; sourceTree = "<group>"; };
 		A100000000000000000000A4 /* CalorieCounterWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000A5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterWidget; sourceTree = "<group>"; };
-		A100000000000000000000A6 /* CalorieCounter/Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter/Shared; sourceTree = "<group>"; };
+		A100000000000000000000A6 /* CalorieCounter/AppGroup */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CalorieCounter/AppGroup; sourceTree = "<group>"; };
+		A100000000000000000000A9 /* CalorieCounterWatch */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A100000000000000000000AB /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = CalorieCounterWatch; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +121,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A100000000000000000000CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -102,7 +137,8 @@
 				A100000000000000000000A1 /* CalorieCounter */,
 				A100000000000000000000A2 /* CalorieCounterTests */,
 				A100000000000000000000A4 /* CalorieCounterWidget */,
-				A100000000000000000000A6 /* CalorieCounter/Shared */,
+				A100000000000000000000A9 /* CalorieCounterWatch */,
+				A100000000000000000000A6 /* CalorieCounter/AppGroup */,
 				A100000000000000000000C1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,6 +149,7 @@
 				A100000000000000000000D1 /* CalorieCounter.app */,
 				A100000000000000000000D2 /* CalorieCounterTests.xctest */,
 				A100000000000000000000D3 /* CalorieCounterWidget.appex */,
+				A100000000000000000000D5 /* CalorieCounterWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -128,11 +165,14 @@
 				A100000000000000000000B1 /* Frameworks */,
 				A100000000000000000000B4 /* Resources */,
 				A100000000000000000000B8 /* Embed App Extensions */,
+				A100000000000000000000EC /* Embed Watch Content */,
+				A1000000000000000000010B /* Verify Watch companion embedded */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				A100000000000000000000E7 /* PBXTargetDependency */,
+				A100000000000000000000EF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A100000000000000000000A1 /* CalorieCounter */,
@@ -181,7 +221,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A100000000000000000000A4 /* CalorieCounterWidget */,
-				A100000000000000000000A6 /* CalorieCounter/Shared */,
+				A100000000000000000000A6 /* CalorieCounter/AppGroup */,
 			);
 			name = CalorieCounterWidget;
 			packageProductDependencies = (
@@ -189,6 +229,29 @@
 			productName = CalorieCounterWidget;
 			productReference = A100000000000000000000D3 /* CalorieCounterWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		A100000000000000000000ED /* CalorieCounterWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000000000000000000F4 /* Build configuration list for PBXNativeTarget "CalorieCounterWatch" */;
+			buildPhases = (
+				A100000000000000000000CD /* Sources */,
+				A100000000000000000000CE /* Frameworks */,
+				A100000000000000000000CF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A100000000000000000000A6 /* CalorieCounter/AppGroup */,
+				A100000000000000000000A9 /* CalorieCounterWatch */,
+			);
+			name = CalorieCounterWatch;
+			packageProductDependencies = (
+			);
+			productName = CalorieCounterWatch;
+			productReference = A100000000000000000000D5 /* CalorieCounterWatch.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -210,6 +273,9 @@
 					A100000000000000000000E5 = {
 						CreatedOnToolsVersion = 17.0;
 					};
+					A100000000000000000000ED = {
+						CreatedOnToolsVersion = 17.0;
+					};
 				};
 			};
 			buildConfigurationList = A100000000000000000000F0 /* Build configuration list for PBXProject "CalorieCounter" */;
@@ -229,6 +295,7 @@
 				A100000000000000000000E1 /* CalorieCounter */,
 				A100000000000000000000E2 /* CalorieCounterTests */,
 				A100000000000000000000E5 /* CalorieCounterWidget */,
+				A100000000000000000000ED /* CalorieCounterWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -255,7 +322,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A100000000000000000000CF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A1000000000000000000010B /* Verify Watch companion embedded */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${BUILT_PRODUCTS_DIR}/CalorieCounterWatch.app/Info.plist",
+			);
+			name = "Verify Watch companion embedded";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${DERIVED_FILE_DIR}/CalorieCounter-watch-embed.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "W=\"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/PlugIns/CalorieCounterWatch.app\"\nSTAMP=\"${DERIVED_FILE_DIR}/CalorieCounter-watch-embed.stamp\"\nif [ ! -d \"$W\" ]; then\n  echo \"error: CalorieCounterWatch.app is missing after the Embed Watch Content phase (looked for: $W). The iPhone build cannot install a Watch companion without this bundle inside CalorieCounter.app/PlugIns.\"\n  exit 1\nfi\necho \"note: Watch companion embedded at $W\"\ntouch \"$STAMP\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A100000000000000000000B3 /* Sources */ = {
@@ -279,6 +376,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A100000000000000000000CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -291,6 +395,11 @@
 			isa = PBXTargetDependency;
 			target = A100000000000000000000E5 /* CalorieCounterWidget */;
 			targetProxy = A100000000000000000000E6 /* PBXContainerItemProxy */;
+		};
+		A100000000000000000000EF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A100000000000000000000ED /* CalorieCounterWatch */;
+			targetProxy = A100000000000000000000EE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -572,6 +681,66 @@
 			};
 			name = Release;
 		};
+		A10000000000000000000109 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CalorieCounterWatch/CalorieCounterWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2B38HKXN3V;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CalorieCounterWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Calories;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounter.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		A1000000000000000000010A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CalorieCounterWatch/CalorieCounterWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2B38HKXN3V;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CalorieCounterWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Calories;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mateovansweevelt.CalorieCounter.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -607,6 +776,15 @@
 			buildConfigurations = (
 				A10000000000000000000107 /* Debug */,
 				A10000000000000000000108 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000000000000000000F4 /* Build configuration list for PBXNativeTarget "CalorieCounterWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000109 /* Debug */,
+				A1000000000000000000010A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -149,7 +149,7 @@ struct AddFoodView: View {
                     Text("🍽️").font(.system(size: 56))
                     Text("It's a food desert in here")
                         .font(.title3.weight(.semibold))
-                    Text("Search above or scan a barcode —\nyour macros won't track themselves.")
+                    Text("Search above or scan a barcode —\nyour macronutrients (carbs, protein, fat) won't track themselves.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)

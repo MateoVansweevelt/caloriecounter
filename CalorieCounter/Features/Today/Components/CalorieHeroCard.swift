@@ -52,7 +52,7 @@ struct CalorieHeroCard: View {
                 .foregroundStyle(.secondary)
         }
         .padding(20)
-        .glassEffect(.regular.tint(.accentColor.opacity(0.15)), in: .rect(cornerRadius: 28))
+        .glassEffect(.regular.tint(.accentColor.opacity(0.15)), in: .rect(cornerRadius: 24))
     }
 }
 

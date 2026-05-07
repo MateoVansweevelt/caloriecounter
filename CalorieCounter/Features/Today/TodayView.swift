@@ -2,7 +2,9 @@ import SwiftUI
 
 struct TodayView: View {
     @Environment(\.dependencies) private var dependencies
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var model: TodayViewModel?
+    private let streakStore = AppOpenStreakStore.shared
 
     var body: some View {
         NavigationStack {
@@ -15,9 +17,19 @@ struct TodayView: View {
             }
             .contentMargins(.horizontal, 20, for: .scrollContent)
             .contentMargins(.vertical, 12, for: .scrollContent)
-            .background(backgroundGradient)
+            .background {
+                Group {
+                    if reduceTransparency {
+                        Color(.systemGroupedBackground)
+                    } else {
+                        backgroundGradient
+                    }
+                }
+                .ignoresSafeArea()
+            }
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear { streakStore.reloadFromDefaults() }
         }
         .task {
             if model == nil, let deps = dependencies {
@@ -35,6 +47,8 @@ struct TodayView: View {
                     consumedKcal: model.totals.energy.converted(to: .kilocalories).value,
                     targetKcal: model.targets.calories
                 )
+
+                streakCard
 
                 HStack(spacing: 12) {
                     MacroRing(
@@ -67,6 +81,95 @@ struct TodayView: View {
         }
     }
 
+    private var streakCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "flame.fill")
+                    .font(.title3)
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Open days")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(streakTitle)
+                        .font(.headline)
+                    Text(streakSubtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+
+            ContributionHeatmapView(
+                model: streakStore.heatmapModelHomeCard(),
+                accessibilitySummary: streakStore.accessibilitySummary + " " + streakStore.accessibilityMonthGridSummary,
+                scalesToFitWidth: true
+            )
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+
+            HStack {
+                streakLegendDot(color: Color.accentColor.opacity(0.85))
+                Text("Active")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendDot(color: Color.secondary.opacity(0.22))
+                Text("Missed")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendDot(color: Color.secondary.opacity(0.12))
+                Text("Upcoming")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                streakLegendTodaySwatch()
+                Text("Today")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(streakCardAccessibilityLabel))
+    }
+
+    private func streakLegendDot(color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(color)
+            .frame(width: 10, height: 10)
+    }
+
+    private func streakLegendTodaySwatch() -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(Color.secondary.opacity(0.22))
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .stroke(Color.accentColor, lineWidth: 2)
+        }
+        .frame(width: 10, height: 10)
+    }
+
+    private var streakTitle: String {
+        let n = streakStore.currentStreak
+        if n <= 0 { return "Start your streak" }
+        if n == 1 { return "1 day streak" }
+        return "\(n) day streak"
+    }
+
+    private var streakSubtitle: String {
+        streakStore.currentStreak > 0
+            ? "Check in each day to keep your streak"
+            : "Check in each day to start a streak"
+    }
+
+    private var streakCardAccessibilityLabel: String {
+        "\(streakTitle). \(streakSubtitle). \(streakStore.accessibilitySummary) \(streakStore.accessibilityMonthGridSummary)"
+    }
+
     private func mealsCard(model: TodayViewModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Meals").font(.headline)
@@ -77,7 +180,8 @@ struct TodayView: View {
                     description: Text("Tap Add Food to log your first item.")
                 )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 28)
             } else {
                 let visibleSlots = MealSlot.allCases.filter {
                     model.groupedBySlot[$0]?.isEmpty == false
@@ -93,7 +197,7 @@ struct TodayView: View {
             }
         }
         .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .glassEffect(.regular, in: .rect(cornerRadius: 22))
     }
 
     private func mealSection(slot: MealSlot, entries: [LogEntry]) -> some View {
@@ -137,7 +241,7 @@ struct TodayView: View {
                     }
                 }
                 .padding(20)
-                .glassEffect(.regular, in: .rect(cornerRadius: 24))
+                .glassEffect(.regular, in: .rect(cornerRadius: 22))
             }
         }
     }
@@ -151,7 +255,6 @@ struct TodayView: View {
             startPoint: .top,
             endPoint: .bottom
         )
-        .ignoresSafeArea()
     }
 }
 
