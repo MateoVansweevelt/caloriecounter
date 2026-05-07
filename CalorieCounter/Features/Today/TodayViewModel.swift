@@ -34,13 +34,25 @@ final class TodayViewModel {
     }
 
     private func publishSnapshot(day: Date) {
+        let dayStart = Calendar.current.startOfDay(for: day)
         let consumedKcal = totals.energy.converted(to: .kilocalories).value
-        let snapshot = CalorieSnapshot(
+        let calorieSnapshot = CalorieSnapshot(
             consumedKcal: consumedKcal,
             targetKcal: targets.calories,
-            dayStart: Calendar.current.startOfDay(for: day)
+            dayStart: dayStart
         )
-        CalorieSnapshotStore.save(snapshot)
+        let macroSnapshot = MacroSnapshot(
+            consumedCarbsGrams: totals.macros.carbohydrates.converted(to: .grams).value,
+            consumedProteinGrams: totals.macros.protein.converted(to: .grams).value,
+            consumedFatGrams: totals.macros.fat.converted(to: .grams).value,
+            targetCarbsGrams: targets.carbsGrams,
+            targetProteinGrams: targets.proteinGrams,
+            targetFatGrams: targets.fatGrams,
+            dayStart: dayStart
+        )
+        CalorieSnapshotStore.save(calorieSnapshot)
+        MacroSnapshotStore.save(macroSnapshot)
         WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
+        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.macros)
     }
 }
