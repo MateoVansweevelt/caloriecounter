@@ -243,8 +243,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A100000000000000000000A9 /* CalorieCounterWatch */,
 				A100000000000000000000A6 /* CalorieCounter/AppGroup */,
+				A100000000000000000000A9 /* CalorieCounterWatch */,
 			);
 			name = CalorieCounterWatch;
 			packageProductDependencies = (

@@ -26,7 +26,19 @@ extension CalorieSnapshotStore {
             updatedAt: .now
         )
         save(snapshot)
+        let macroSnapshot = MacroSnapshot(
+            consumedCarbsGrams: consumedCarbsG,
+            consumedProteinGrams: consumedProteinG,
+            consumedFatGrams: consumedFatG,
+            targetCarbsGrams: targets.carbsGrams,
+            targetProteinGrams: targets.proteinGrams,
+            targetFatGrams: targets.fatGrams,
+            dayStart: snapshot.dayStart,
+            updatedAt: snapshot.updatedAt
+        )
+        MacroSnapshotStore.save(macroSnapshot)
         WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
+        WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.macros)
     }
 
     /// Stronger refresh for manual “sync” actions (reloads all widget timelines for this app extension).
