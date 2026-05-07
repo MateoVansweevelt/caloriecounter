@@ -25,6 +25,9 @@ enum TodaySnapshotPublisher {
     /// Recomputes the snapshot then asks WidgetKit for a full timeline reload (use from Settings).
     static func forceSync(logbook: any LogbookRepository) async {
         await refresh(logbook: logbook)
-        await CalorieSnapshotStore.reloadAllWidgetTimelines()
+        await MainActor.run {
+            CalorieSnapshotStore.reloadAllWidgetTimelines()
+            PhoneWatchSnapshotNotifier.shared.pushWatchReloadDelivery()
+        }
     }
 }

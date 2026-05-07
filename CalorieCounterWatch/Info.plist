@@ -7,6 +7,6 @@
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.mateovansweevelt.CalorieCounter</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>
-	<false/>
+	<true/>
 </dict>
 </plist>

@@ -10,6 +10,7 @@ struct CalorieCounterApp: App {
     init() {
         UIScrollView.appearance().showsVerticalScrollIndicator = false
         UIScrollView.appearance().showsHorizontalScrollIndicator = false
+        PhoneWatchSnapshotNotifier.shared.start()
     }
 
     var body: some Scene {

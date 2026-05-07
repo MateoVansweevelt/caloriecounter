@@ -39,6 +39,7 @@ extension CalorieSnapshotStore {
         MacroSnapshotStore.save(macroSnapshot)
         WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.ring)
         WidgetCenter.shared.reloadTimelines(ofKind: CalorieWidgetKind.macros)
+        PhoneWatchSnapshotNotifier.shared.notifySnapshotUpdated()
     }
 
     /// Stronger refresh for manual “sync” actions (reloads all widget timelines for this app extension).

@@ -3,7 +3,7 @@ import UIKit
 
 struct SettingsView: View {
     @Environment(\.dependencies) private var dependencies
-    @State private var isForceSyncingWidget = false
+    @State private var isForceSyncingSnapshot = false
 
     // MARK: - Unit system
 
@@ -209,26 +209,42 @@ struct SettingsView: View {
             }
             .font(.footnote)
         }
+        .onChange(of: carbs) { _, _ in refreshCalorieWidgetFromLogbook() }
+        .onChange(of: protein) { _, _ in refreshCalorieWidgetFromLogbook() }
+        .onChange(of: fat) { _, _ in refreshCalorieWidgetFromLogbook() }
     }
 
     private var widgetSection: some View {
         Section {
             Button {
-                Task { await forceSyncCalorieWidget() }
+                Task { await forceSyncSharedSnapshotToWidgetAndWatch() }
             } label: {
                 HStack {
                     Label("Sync home screen widget", systemImage: "arrow.triangle.2.circlepath")
                     Spacer()
-                    if isForceSyncingWidget {
+                    if isForceSyncingSnapshot {
                         ProgressView()
                     }
                 }
             }
-            .disabled(isForceSyncingWidget || dependencies?.logbook == nil)
+            .disabled(isForceSyncingSnapshot || dependencies?.logbook == nil)
+
+            Button {
+                Task { await forceSyncSharedSnapshotToWidgetAndWatch() }
+            } label: {
+                HStack {
+                    Label("Sync Apple Watch", systemImage: "applewatch")
+                    Spacer()
+                    if isForceSyncingSnapshot {
+                        ProgressView()
+                    }
+                }
+            }
+            .disabled(isForceSyncingSnapshot || dependencies?.logbook == nil)
         } header: {
-            Text("Widget")
+            Text("Widget & Apple Watch")
         } footer: {
-            Text("Updates the shared calorie snapshot from your log and reloads the widget. Use this if the ring does not match the app.")
+            Text("Rebuilds today’s shared snapshot from your log, reloads home screen widgets, and pings your Apple Watch. Use either control if the ring or Watch Today looks stale.")
         }
     }
 
@@ -237,7 +253,6 @@ struct SettingsView: View {
             Label("Apple Health sync", systemImage: "heart.fill")
                 .foregroundStyle(.pink.opacity(0.6))
             Label("Custom foods & recipes", systemImage: "fork.knife.circle")
-            Label("Apple Watch app", systemImage: "applewatch")
             Label("Widgets & Live Activities", systemImage: "rectangle.stack.badge.play")
             Label("Siri / App Intents", systemImage: "mic.fill")
             Label("iCloud sync", systemImage: "cloud.fill")
@@ -382,10 +397,10 @@ struct SettingsView: View {
     }
 
     @MainActor
-    private func forceSyncCalorieWidget() async {
+    private func forceSyncSharedSnapshotToWidgetAndWatch() async {
         guard let logbook = dependencies?.logbook else { return }
-        isForceSyncingWidget = true
-        defer { isForceSyncingWidget = false }
+        isForceSyncingSnapshot = true
+        defer { isForceSyncingSnapshot = false }
         await TodaySnapshotPublisher.forceSync(logbook: logbook)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }

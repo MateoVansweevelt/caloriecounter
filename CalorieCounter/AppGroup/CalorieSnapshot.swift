@@ -1,7 +1,8 @@
 import Foundation
 
 /// Lightweight summary of today's nutrition, shared between the iOS app, widget, and Watch
-/// via an App Group UserDefaults suite. Kept small so extensions do not need SwiftData.
+/// via the App Group **container** (JSON files). Kept small so extensions do not need SwiftData.
+/// UserDefaults in app groups is avoided on watchOS to reduce `CFPrefsPlistSource` / cfprefsd warnings and read failures.
 public struct CalorieSnapshot: Codable, Hashable, Sendable {
     public var consumedKcal: Double
     public var targetKcal: Double
@@ -107,21 +108,44 @@ public enum CalorieSnapshotStore {
     /// (`CalorieCounter.entitlements`, `CalorieCounterWidget.entitlements`, Watch entitlements).
     public static let appGroupID = "group.mateovansweevelt.caloriecounter"
 
-    private static let key = "today.calorieSnapshot"
+    private static let legacyDefaultsKey = "today.calorieSnapshot"
+    private static let calorieFilename = "SharedCalorieSnapshot.json"
 
-    private static var defaults: UserDefaults? {
+    private static var groupContainerURL: URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
+    }
+
+    private static var calorieFileURL: URL? {
+        groupContainerURL?.appendingPathComponent(calorieFilename, isDirectory: false)
+    }
+
+    private static var legacyDefaults: UserDefaults? {
         UserDefaults(suiteName: appGroupID)
     }
 
     public static func save(_ snapshot: CalorieSnapshot) {
-        guard let defaults else { return }
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        defaults.set(data, forKey: key)
+        if let url = calorieFileURL {
+            do {
+                try data.write(to: url, options: [.atomic])
+                return
+            } catch {
+                // Fall through to UserDefaults when the container is unavailable (e.g. mis-provisioned).
+            }
+        }
+        legacyDefaults?.set(data, forKey: legacyDefaultsKey)
     }
 
     public static func load() -> CalorieSnapshot? {
-        guard let defaults, let data = defaults.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(CalorieSnapshot.self, from: data)
+        if let url = calorieFileURL, let data = try? Data(contentsOf: url), !data.isEmpty {
+            if let decoded = try? JSONDecoder().decode(CalorieSnapshot.self, from: data) {
+                return decoded
+            }
+        }
+        guard let defaults = legacyDefaults, let data = defaults.data(forKey: legacyDefaultsKey), !data.isEmpty else { return nil }
+        guard let decoded = try? JSONDecoder().decode(CalorieSnapshot.self, from: data) else { return nil }
+        if let url = calorieFileURL { try? data.write(to: url, options: [.atomic]) }
+        return decoded
     }
 }
 
@@ -167,20 +191,40 @@ public struct MacroSnapshot: Codable, Hashable, Sendable {
 }
 
 public enum MacroSnapshotStore {
-    private static let key = "today.macroSnapshot"
+    private static let legacyDefaultsKey = "today.macroSnapshot"
+    private static let macroFilename = "SharedMacroSnapshot.json"
 
-    private static var defaults: UserDefaults? {
+    private static var macroFileURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: CalorieSnapshotStore.appGroupID)?
+            .appendingPathComponent(macroFilename, isDirectory: false)
+    }
+
+    private static var legacyDefaults: UserDefaults? {
         UserDefaults(suiteName: CalorieSnapshotStore.appGroupID)
     }
 
     public static func save(_ snapshot: MacroSnapshot) {
-        guard let defaults else { return }
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
-        defaults.set(data, forKey: key)
+        if let url = macroFileURL {
+            do {
+                try data.write(to: url, options: [.atomic])
+                return
+            } catch {
+            }
+        }
+        legacyDefaults?.set(data, forKey: legacyDefaultsKey)
     }
 
     public static func load() -> MacroSnapshot? {
-        guard let defaults, let data = defaults.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(MacroSnapshot.self, from: data)
+        if let url = macroFileURL, let data = try? Data(contentsOf: url), !data.isEmpty {
+            if let decoded = try? JSONDecoder().decode(MacroSnapshot.self, from: data) {
+                return decoded
+            }
+        }
+        guard let defaults = legacyDefaults, let data = defaults.data(forKey: legacyDefaultsKey), !data.isEmpty else { return nil }
+        guard let decoded = try? JSONDecoder().decode(MacroSnapshot.self, from: data) else { return nil }
+        if let url = macroFileURL { try? data.write(to: url, options: [.atomic]) }
+        return decoded
     }
 }

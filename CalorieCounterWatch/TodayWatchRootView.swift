@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Glance-friendly view: calorie budget, macro headroom, and how fresh the phone snapshot is.
 struct TodayWatchRootView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var snapshot: CalorieSnapshot?
     @State private var tick = Date()
 
@@ -32,7 +33,13 @@ struct TodayWatchRootView: View {
         .navigationTitle("Today")
         .onAppear(perform: reload)
         .onReceive(timer) { tick = $0 }
-        .onChange(of: tick) { _ in reload() }
+        .onChange(of: tick) { _, _ in reload() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { reload() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .calorieSnapshotUpdatedFromPhone)) { _ in
+            reload()
+        }
     }
 
     private var resolvedSnapshot: CalorieSnapshot? {

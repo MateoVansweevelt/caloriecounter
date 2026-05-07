@@ -7,6 +7,9 @@ struct CalorieCounterWatchApp: App {
             NavigationStack {
                 TodayWatchRootView()
             }
+            .task {
+                WatchSnapshotConnectivity.start()
+            }
         }
     }
 }
